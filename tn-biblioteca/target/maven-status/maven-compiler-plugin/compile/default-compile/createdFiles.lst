@@ -1,0 +1,8 @@
+com\tn\biblioteca\dto\EjercicioDTO.class
+com\tn\biblioteca\config\OpenApiConfig.class
+com\tn\biblioteca\model\Equipamiento.class
+com\tn\biblioteca\security\SecurityConfig.class
+com\tn\biblioteca\exception\GlobalExceptionHandler.class
+com\tn\biblioteca\TnBibliotecaApplication.class
+com\tn\biblioteca\model\Dificultad.class
+com\tn\biblioteca\model\GrupoMuscular.class

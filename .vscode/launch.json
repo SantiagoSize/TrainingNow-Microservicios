@@ -9,6 +9,16 @@
             "projectName": "tn-usuarios",
             "args": "",
             "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-TnBibliotecaApplication<tn-biblioteca>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.tn.biblioteca.TnBibliotecaApplication",
+            "projectName": "tn-biblioteca",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
         }
     ]
 }
