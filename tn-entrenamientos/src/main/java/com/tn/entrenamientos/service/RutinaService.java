@@ -1,5 +1,7 @@
 package com.tn.entrenamientos.service;
 
+import com.tn.entrenamientos.client.UsuariosClient;
+import com.tn.entrenamientos.client.dto.UserProfileDTO;
 import com.tn.entrenamientos.converter.RutinaConverter;
 import com.tn.entrenamientos.dto.RutinaDTO;
 import com.tn.entrenamientos.dto.RutinaEjercicioDTO;
@@ -13,6 +15,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,11 +24,23 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class RutinaService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(RutinaService.class);
+
     private final RutinaRepository rutinaRepository;
     private final RutinaConverter rutinaConverter;
+    private final UsuariosClient usuariosClient;
 
     @Transactional
     public RutinaDTO crearRutina(RutinaRequestDTO request) {
+        // Consultar perfil biométrico antes de crear la rutina
+        UserProfileDTO profile = usuariosClient.getUserById(request.getOwnerId());
+        LOGGER.info(
+                "Creando rutina para usuario {} (genero={}, pesoActual={}, altura={})",
+                profile.getId(),
+                profile.getGenero(),
+                profile.getPesoActual(),
+                profile.getAltura()
+        );
         Rutina rutina = rutinaConverter.toEntity(request);
         Rutina guardada = rutinaRepository.save(
                 Objects.requireNonNull(rutina, "rutina must not be null")

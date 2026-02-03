@@ -11,19 +11,22 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/exercises")
 @RequiredArgsConstructor
 @Tag(name = "Biblioteca de Ejercicios", description = "CRUD de ejercicios de la biblioteca de entrenamiento")
 public class EjercicioController {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(EjercicioController.class);
 
     private final EjercicioService ejercicioService;
 
@@ -41,8 +44,10 @@ public class EjercicioController {
             @RequestParam(name = "grupoMuscular", required = false) GrupoMuscular grupoMuscular
     ) {
         if (grupoMuscular != null) {
+            LOGGER.info("GET /api/exercises?grupoMuscular={}", grupoMuscular);
             return ResponseEntity.ok(ejercicioService.findByGrupoMuscular(grupoMuscular));
         }
+        LOGGER.info("GET /api/exercises");
         return ResponseEntity.ok(ejercicioService.findAll());
     }
 
@@ -55,6 +60,7 @@ public class EjercicioController {
     })
     public ResponseEntity<EjercicioDTO> findById(
             @Parameter(description = "ID del ejercicio") @PathVariable @NonNull Long id) {
+        LOGGER.info("GET /api/exercises/{}", id);
         return ResponseEntity.ok(ejercicioService.findById(id));
     }
 
@@ -66,6 +72,7 @@ public class EjercicioController {
     })
     public ResponseEntity<List<EjercicioDTO>> findByGrupoMuscular(
             @Parameter(description = "Grupo muscular (PECHO, ESPALDA, PIERNAS, HOMBROS, BRAZOS, CORE)") @PathVariable @NonNull GrupoMuscular grupoMuscular) {
+        LOGGER.info("GET /api/exercises/grupo/{}", grupoMuscular);
         return ResponseEntity.ok(ejercicioService.findByGrupoMuscular(grupoMuscular));
     }
 
@@ -77,6 +84,7 @@ public class EjercicioController {
     })
     public ResponseEntity<List<EjercicioDTO>> findByDificultad(
             @Parameter(description = "Dificultad (PRINCIPIANTE, INTERMEDIO, AVANZADO)") @PathVariable @NonNull Dificultad dificultad) {
+        LOGGER.info("GET /api/exercises/dificultad/{}", dificultad);
         return ResponseEntity.ok(ejercicioService.findByDificultad(dificultad));
     }
 
@@ -88,6 +96,7 @@ public class EjercicioController {
             @ApiResponse(responseCode = "500", description = "Error interno del servidor.")
     })
     public ResponseEntity<EjercicioDTO> create(@Valid @RequestBody EjercicioRequestDTO request) {
+        LOGGER.info("POST /api/exercises nombre={}", request.getNombre());
         EjercicioDTO created = ejercicioService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
@@ -103,6 +112,7 @@ public class EjercicioController {
     public ResponseEntity<EjercicioDTO> update(
             @Parameter(description = "ID del ejercicio") @PathVariable @NonNull Long id,
             @Valid @RequestBody EjercicioRequestDTO request) {
+        LOGGER.info("PUT /api/exercises/{}", id);
         return ResponseEntity.ok(ejercicioService.update(id, request));
     }
 
@@ -115,6 +125,7 @@ public class EjercicioController {
     })
     public ResponseEntity<Void> deleteById(
             @Parameter(description = "ID del ejercicio") @PathVariable @NonNull Long id) {
+        LOGGER.info("DELETE /api/exercises/{}", id);
         ejercicioService.deleteById(id);
         return ResponseEntity.noContent().build();
     }

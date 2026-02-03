@@ -64,4 +64,11 @@ public class UserService {
         User user = Objects.requireNonNull(userDetails.getUser(), "user must not be null");
         return userConverter.toDTO(user);
     }
+
+    @Transactional(readOnly = true)
+    public UserDTO getUserById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado: " + id));
+        return userConverter.toDTO(user);
+    }
 }

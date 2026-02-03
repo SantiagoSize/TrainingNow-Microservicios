@@ -8,9 +8,12 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -19,6 +22,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @Tag(name = "Perfil de Usuario", description = "Consulta del perfil del usuario autenticado (datos personales, físicos y objetivo)")
 public class UserController {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserController.class);
 
     private final UserService userService;
 
@@ -35,7 +40,23 @@ public class UserController {
     })
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<UserDTO> getCurrentUser(Authentication authentication) {
+        LOGGER.info("GET /api/users/me");
         UserDTO user = userService.getCurrentUser(authentication);
+        return ResponseEntity.ok(user);
+    }
+
+    @GetMapping("/{id}")
+    @Operation(
+            summary = "Obtener usuario por ID",
+            description = "Devuelve el perfil del usuario por su identificador numérico."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Usuario encontrado."),
+            @ApiResponse(responseCode = "404", description = "Usuario no encontrado.")
+    })
+    public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
+        LOGGER.info("GET /api/users/{}", id);
+        UserDTO user = userService.getUserById(id);
         return ResponseEntity.ok(user);
     }
 }

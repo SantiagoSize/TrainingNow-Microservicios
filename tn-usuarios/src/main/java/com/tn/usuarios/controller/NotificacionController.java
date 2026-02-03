@@ -10,6 +10,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
@@ -21,12 +23,15 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class NotificacionController {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(NotificacionController.class);
+
     private final NotificacionRepository notificacionRepository;
 
     @GetMapping("/user/{usuarioId}")
     @Operation(summary = "Listar notificaciones de un usuario")
     @SuppressWarnings("null")
     public ResponseEntity<List<Notificacion>> findByUsuario(@PathVariable @NonNull Long usuarioId) {
+        LOGGER.info("GET /api/notifications/user/{}", usuarioId);
         return ResponseEntity.ok(notificacionRepository.findByUsuarioIdOrderByIdDesc(usuarioId));
     }
 
@@ -44,6 +49,7 @@ public class NotificacionController {
                 notificacionRepository.save(notificacion),
                 "saved notification must not be null"
         );
+        LOGGER.info("POST /api/notifications usuarioId={} id={}", saved.getUsuarioId(), saved.getId());
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" version="3.0.2" name="com.tn.biblioteca.controller.EjercicioControllerIntegrationTest" time="4.275" tests="1" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" version="3.0.2" name="com.tn.biblioteca.TnBibliotecaApplicationTests" time="0.46" tests="1" errors="0" skipped="0" failures="0">
   <properties>
     <property name="java.specification.version" value="25"/>
     <property name="sun.cpu.isalist" value="amd64"/>
@@ -48,7 +48,7 @@
     <property name="localRepository" value="C:\Users\sahnb\.m2\repository"/>
     <property name="java.vendor.url.bug" value="https://bugreport.java.com/bugreport/"/>
     <property name="java.io.tmpdir" value="C:\Users\sahnb\AppData\Local\Temp\"/>
-    <property name="com.zaxxer.hikari.pool_number" value="1"/>
+    <property name="com.zaxxer.hikari.pool_number" value="2"/>
     <property name="java.version" value="25.0.1"/>
     <property name="user.dir" value="C:\Users\sahnb\AndroidStudioProjects\TrainingNow\TrainingNow-Microservicios\tn-biblioteca"/>
     <property name="os.arch" value="amd64"/>
@@ -67,10 +67,10 @@
     <property name="java.class.version" value="69.0"/>
     <property name="LOGGED_APPLICATION_NAME" value="[tn-biblioteca] "/>
   </properties>
-  <testcase name="findAll_shouldReturnOk" classname="com.tn.biblioteca.controller.EjercicioControllerIntegrationTest" time="0.295">
-    <system-out><![CDATA[10:00:58.527 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.tn.biblioteca.controller.EjercicioControllerIntegrationTest]: EjercicioControllerIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-10:00:58.654 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.tn.biblioteca.TnBibliotecaApplication for test class com.tn.biblioteca.controller.EjercicioControllerIntegrationTest
-10:00:58.773 [main] INFO org.springframework.boot.devtools.restart.RestartApplicationListener -- Restart disabled due to context in which it is running
+  <testcase name="contextLoads" classname="com.tn.biblioteca.TnBibliotecaApplicationTests" time="0.004">
+    <system-out><![CDATA[2026-02-03T10:01:02.707-03:00  INFO 19428 --- [tn-biblioteca] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.tn.biblioteca.TnBibliotecaApplicationTests]: TnBibliotecaApplicationTests does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-02-03T10:01:02.717-03:00  INFO 19428 --- [tn-biblioteca] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.tn.biblioteca.TnBibliotecaApplication for test class com.tn.biblioteca.TnBibliotecaApplicationTests
+2026-02-03T10:01:02.721-03:00  INFO 19428 --- [tn-biblioteca] [           main] o.s.b.d.r.RestartApplicationListener     : Restart disabled due to context in which it is running
 
   .   ____          _            __ _ _
  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
@@ -81,48 +81,38 @@
 
  :: Spring Boot ::               (v3.5.10)
 
-2026-02-03T10:00:59.003-03:00  INFO 19428 --- [tn-biblioteca] [           main] t.b.c.EjercicioControllerIntegrationTest : Starting EjercicioControllerIntegrationTest using Java 25.0.1 with PID 19428 (started by sahnb in C:\Users\sahnb\AndroidStudioProjects\TrainingNow\TrainingNow-Microservicios\tn-biblioteca)
-2026-02-03T10:00:59.004-03:00  INFO 19428 --- [tn-biblioteca] [           main] t.b.c.EjercicioControllerIntegrationTest : The following 1 profile is active: "test"
-2026-02-03T10:00:59.630-03:00  INFO 19428 --- [tn-biblioteca] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2026-02-03T10:00:59.676-03:00  INFO 19428 --- [tn-biblioteca] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 38 ms. Found 1 JPA repository interface.
-2026-02-03T10:01:00.046-03:00  INFO 19428 --- [tn-biblioteca] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
-2026-02-03T10:01:00.101-03:00  INFO 19428 --- [tn-biblioteca] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.41.Final
-2026-02-03T10:01:00.134-03:00  INFO 19428 --- [tn-biblioteca] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
-2026-02-03T10:01:00.384-03:00  INFO 19428 --- [tn-biblioteca] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
-2026-02-03T10:01:00.411-03:00  INFO 19428 --- [tn-biblioteca] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
-2026-02-03T10:01:00.570-03:00  INFO 19428 --- [tn-biblioteca] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:tn_biblioteca_test user=SA
-2026-02-03T10:01:00.572-03:00  INFO 19428 --- [tn-biblioteca] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
-2026-02-03T10:01:00.594-03:00  WARN 19428 --- [tn-biblioteca] [           main] org.hibernate.dialect.Dialect            : HHH000511: The 2.3.232 version for [org.hibernate.dialect.MySQLDialect] is no longer supported, hence certain features may not work properly. The minimum supported version is 8.0.0. Check the community dialects project for available legacy versions.
-2026-02-03T10:01:00.596-03:00  WARN 19428 --- [tn-biblioteca] [           main] org.hibernate.orm.deprecation            : HHH90000025: MySQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2026-02-03T10:01:00.608-03:00  INFO 19428 --- [tn-biblioteca] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
-	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+2026-02-03T10:01:02.744-03:00  INFO 19428 --- [tn-biblioteca] [           main] c.t.b.TnBibliotecaApplicationTests       : Starting TnBibliotecaApplicationTests using Java 25.0.1 with PID 19428 (started by sahnb in C:\Users\sahnb\AndroidStudioProjects\TrainingNow\TrainingNow-Microservicios\tn-biblioteca)
+2026-02-03T10:01:02.744-03:00  INFO 19428 --- [tn-biblioteca] [           main] c.t.b.TnBibliotecaApplicationTests       : The following 1 profile is active: "test"
+2026-02-03T10:01:02.896-03:00  INFO 19428 --- [tn-biblioteca] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-02-03T10:01:02.904-03:00  INFO 19428 --- [tn-biblioteca] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 7 ms. Found 1 JPA repository interface.
+2026-02-03T10:01:02.959-03:00  INFO 19428 --- [tn-biblioteca] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-02-03T10:01:02.961-03:00  INFO 19428 --- [tn-biblioteca] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-02-03T10:01:02.968-03:00  INFO 19428 --- [tn-biblioteca] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-02-03T10:01:02.968-03:00  INFO 19428 --- [tn-biblioteca] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
+2026-02-03T10:01:02.969-03:00  INFO 19428 --- [tn-biblioteca] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection conn10: url=jdbc:h2:mem:tn_biblioteca_test user=SA
+2026-02-03T10:01:02.970-03:00  INFO 19428 --- [tn-biblioteca] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
+2026-02-03T10:01:02.970-03:00  WARN 19428 --- [tn-biblioteca] [           main] org.hibernate.dialect.Dialect            : HHH000511: The 2.3.232 version for [org.hibernate.dialect.MySQLDialect] is no longer supported, hence certain features may not work properly. The minimum supported version is 8.0.0. Check the community dialects project for available legacy versions.
+2026-02-03T10:01:02.971-03:00  WARN 19428 --- [tn-biblioteca] [           main] org.hibernate.orm.deprecation            : HHH90000025: MySQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-02-03T10:01:02.971-03:00  INFO 19428 --- [tn-biblioteca] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-2)']
 	Database driver: undefined/unknown
 	Database version: 2.3.232
 	Autocommit mode: undefined/unknown
 	Isolation level: undefined/unknown
 	Minimum pool size: undefined/unknown
 	Maximum pool size: undefined/unknown
-2026-02-03T10:01:01.179-03:00  INFO 19428 --- [tn-biblioteca] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-2026-02-03T10:01:01.210-03:00  INFO 19428 --- [tn-biblioteca] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
-2026-02-03T10:01:01.553-03:00  WARN 19428 --- [tn-biblioteca] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
-2026-02-03T10:01:01.774-03:00  WARN 19428 --- [tn-biblioteca] [           main] .s.s.UserDetailsServiceAutoConfiguration : 
+2026-02-03T10:01:02.997-03:00  INFO 19428 --- [tn-biblioteca] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-02-03T10:01:03.000-03:00  INFO 19428 --- [tn-biblioteca] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-02-03T10:01:03.028-03:00  WARN 19428 --- [tn-biblioteca] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-02-03T10:01:03.070-03:00  WARN 19428 --- [tn-biblioteca] [           main] .s.s.UserDetailsServiceAutoConfiguration : 
 
-Using generated security password: bee86025-ded8-4d8e-9cc6-10c81238d159
+Using generated security password: 5e90b5ce-2577-410a-a7eb-7b6b45f44b10
 
 This generated password is for development use only. Your security configuration must be updated before running your application in production.
 
-2026-02-03T10:01:01.781-03:00  INFO 19428 --- [tn-biblioteca] [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
-2026-02-03T10:01:02.136-03:00  INFO 19428 --- [tn-biblioteca] [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
-2026-02-03T10:01:02.136-03:00  INFO 19428 --- [tn-biblioteca] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
-2026-02-03T10:01:02.137-03:00  INFO 19428 --- [tn-biblioteca] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
-2026-02-03T10:01:02.155-03:00  INFO 19428 --- [tn-biblioteca] [           main] t.b.c.EjercicioControllerIntegrationTest : Started EjercicioControllerIntegrationTest in 3.391 seconds (process running for 4.147)
-2026-02-03T10:01:02.390-03:00  INFO 19428 --- [tn-biblioteca] [           main] c.t.b.config.BibliotecaDataLoader        : Cargados 10 ejercicios en la biblioteca
+2026-02-03T10:01:03.070-03:00  INFO 19428 --- [tn-biblioteca] [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+2026-02-03T10:01:03.149-03:00  INFO 19428 --- [tn-biblioteca] [           main] c.t.b.TnBibliotecaApplicationTests       : Started TnBibliotecaApplicationTests in 0.428 seconds (process running for 5.141)
+2026-02-03T10:01:03.159-03:00  INFO 19428 --- [tn-biblioteca] [           main] c.t.b.config.BibliotecaDataLoader        : Cargados 10 ejercicios en la biblioteca
 ]]></system-out>
-    <system-err><![CDATA[Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
-WARNING: A Java agent has been loaded dynamically (C:\Users\sahnb\.m2\repository\net\bytebuddy\byte-buddy-agent\1.17.8\byte-buddy-agent-1.17.8.jar)
-WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
-WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
-WARNING: Dynamic loading of agents will be disallowed by default in a future release
-]]></system-err>
   </testcase>
 </testsuite>
