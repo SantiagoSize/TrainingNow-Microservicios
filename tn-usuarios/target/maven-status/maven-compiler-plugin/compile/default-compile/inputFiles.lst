@@ -1,6 +1,7 @@
 C:\Users\sahnb\AndroidStudioProjects\TrainingNow\TrainingNow-Microservicios\tn-usuarios\src\main\java\com\tn\usuarios\config\OpenApiConfig.java
 C:\Users\sahnb\AndroidStudioProjects\TrainingNow\TrainingNow-Microservicios\tn-usuarios\src\main\java\com\tn\usuarios\config\UsuariosDataLoader.java
 C:\Users\sahnb\AndroidStudioProjects\TrainingNow\TrainingNow-Microservicios\tn-usuarios\src\main\java\com\tn\usuarios\controller\AuthController.java
+C:\Users\sahnb\AndroidStudioProjects\TrainingNow\TrainingNow-Microservicios\tn-usuarios\src\main\java\com\tn\usuarios\controller\NotificacionController.java
 C:\Users\sahnb\AndroidStudioProjects\TrainingNow\TrainingNow-Microservicios\tn-usuarios\src\main\java\com\tn\usuarios\controller\package-info.java
 C:\Users\sahnb\AndroidStudioProjects\TrainingNow\TrainingNow-Microservicios\tn-usuarios\src\main\java\com\tn\usuarios\controller\UserController.java
 C:\Users\sahnb\AndroidStudioProjects\TrainingNow\TrainingNow-Microservicios\tn-usuarios\src\main\java\com\tn\usuarios\converter\package-info.java
@@ -12,10 +13,12 @@ C:\Users\sahnb\AndroidStudioProjects\TrainingNow\TrainingNow-Microservicios\tn-u
 C:\Users\sahnb\AndroidStudioProjects\TrainingNow\TrainingNow-Microservicios\tn-usuarios\src\main\java\com\tn\usuarios\dto\UserDTO.java
 C:\Users\sahnb\AndroidStudioProjects\TrainingNow\TrainingNow-Microservicios\tn-usuarios\src\main\java\com\tn\usuarios\exception\GlobalExceptionHandler.java
 C:\Users\sahnb\AndroidStudioProjects\TrainingNow\TrainingNow-Microservicios\tn-usuarios\src\main\java\com\tn\usuarios\model\Genero.java
+C:\Users\sahnb\AndroidStudioProjects\TrainingNow\TrainingNow-Microservicios\tn-usuarios\src\main\java\com\tn\usuarios\model\Notificacion.java
 C:\Users\sahnb\AndroidStudioProjects\TrainingNow\TrainingNow-Microservicios\tn-usuarios\src\main\java\com\tn\usuarios\model\Objetivo.java
 C:\Users\sahnb\AndroidStudioProjects\TrainingNow\TrainingNow-Microservicios\tn-usuarios\src\main\java\com\tn\usuarios\model\package-info.java
 C:\Users\sahnb\AndroidStudioProjects\TrainingNow\TrainingNow-Microservicios\tn-usuarios\src\main\java\com\tn\usuarios\model\Role.java
 C:\Users\sahnb\AndroidStudioProjects\TrainingNow\TrainingNow-Microservicios\tn-usuarios\src\main\java\com\tn\usuarios\model\User.java
+C:\Users\sahnb\AndroidStudioProjects\TrainingNow\TrainingNow-Microservicios\tn-usuarios\src\main\java\com\tn\usuarios\repository\NotificacionRepository.java
 C:\Users\sahnb\AndroidStudioProjects\TrainingNow\TrainingNow-Microservicios\tn-usuarios\src\main\java\com\tn\usuarios\repository\package-info.java
 C:\Users\sahnb\AndroidStudioProjects\TrainingNow\TrainingNow-Microservicios\tn-usuarios\src\main\java\com\tn\usuarios\repository\RoleRepository.java
 C:\Users\sahnb\AndroidStudioProjects\TrainingNow\TrainingNow-Microservicios\tn-usuarios\src\main\java\com\tn\usuarios\repository\UserRepository.java
