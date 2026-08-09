@@ -1,0 +1,41 @@
+package com.tn.biblioteca.dto;
+
+import com.tn.biblioteca.model.Ejercicio;
+import lombok.*;
+
+/** DTO de ejercicio. Contrato exacto con el cliente Android. */
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class ExerciseDto {
+
+    private Long id;
+    private String name;
+    private String category;
+    private String description;
+    private String videoUrl;
+    private Boolean isSystemDefault;
+
+    public static ExerciseDto fromEntity(Ejercicio e) {
+        return ExerciseDto.builder()
+                .id(e.getId())
+                .name(e.getName())
+                .category(e.getCategory())
+                .description(e.getDescription())
+                .videoUrl(e.getVideoUrl())
+                .isSystemDefault(e.getIsSystemDefault())
+                .build();
+    }
+
+    public Ejercicio toEntity() {
+        return Ejercicio.builder()
+                .id(id != null && id > 0 ? id : null)
+                .name(name)
+                .category(category)
+                .description(description)
+                .videoUrl(videoUrl)
+                .isSystemDefault(isSystemDefault != null ? isSystemDefault : true)
+                .build();
+    }
+}
