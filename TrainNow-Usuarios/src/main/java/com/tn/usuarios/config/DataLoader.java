@@ -26,7 +26,7 @@ public class DataLoader implements CommandLineRunner {
                 .role("ADMIN")
                 .name("Admin")
                 .lastName("TrainingNow")
-                .email("admin@admin.tn")
+                .email("admin@trainingnow.com")
                 .password(passwordEncoder.encode("admin123"))
                 .build());
 
@@ -34,8 +34,8 @@ public class DataLoader implements CommandLineRunner {
                 .role("TRAINER")
                 .name("Carlos")
                 .lastName("Entrenador")
-                .email("coach@coach.tn")
-                .password(passwordEncoder.encode("coach123"))
+                .email("entrenador@trainingnow.com")
+                .password(passwordEncoder.encode("entrenador123"))
                 .specializations("Fuerza,Hipertrofia")
                 .build());
 
@@ -43,7 +43,7 @@ public class DataLoader implements CommandLineRunner {
                 .role("USER")
                 .name("Santiago")
                 .lastName("Usuario")
-                .email("user@user.tn")
+                .email("usuario@gmail.com")
                 .password(passwordEncoder.encode("user123"))
                 .build());
     }

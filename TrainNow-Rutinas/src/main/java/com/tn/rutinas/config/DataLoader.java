@@ -24,7 +24,7 @@ public class DataLoader implements CommandLineRunner {
 
         Rutina fullBody = rutinaRepository.save(Rutina.builder()
                 .ownerId(null) // pública
-                .creatorId(2L) // coach seed de tn-usuarios
+                .creatorId(2L) // entrenador seed de TrainNow-Usuarios
                 .name("Full Body Principiante")
                 .dayInfo("Lunes, Miércoles, Viernes")
                 .build());

@@ -1,5 +1,6 @@
 package com.tn.biblioteca.exception;
 
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +23,14 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<Map<String, String>> integrity(DataIntegrityViolationException ex) {
         return body(HttpStatus.CONFLICT, "Conflicto de datos");
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<Map<String, String>> constraintViolation(ConstraintViolationException ex) {
+        Map<String, String> errors = new HashMap<>();
+        ex.getConstraintViolations().forEach(v ->
+                errors.put(v.getPropertyPath().toString(), v.getMessage()));
+        return ResponseEntity.badRequest().body(errors);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

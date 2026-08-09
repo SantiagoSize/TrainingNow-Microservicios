@@ -1,9 +1,9 @@
 package com.tn.comunicaciones.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -19,7 +19,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class NotificacionControllerIntegrationTest {
 
     @Autowired private MockMvc mockMvc;
-    @Autowired private ObjectMapper objectMapper;
 
     @Test
     void getByUser_devuelveSeedBienvenida() throws Exception {
@@ -40,7 +39,7 @@ class NotificacionControllerIntegrationTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.isRead").value(false))
                 .andReturn().getResponse().getContentAsString();
-        long id = objectMapper.readTree(resp).get("id").asLong();
+        long id = ((Number) JsonPath.read(resp, "$.id")).longValue();
 
         mockMvc.perform(patch("/api/notifications/" + id + "/read"))
                 .andExpect(status().isOk())

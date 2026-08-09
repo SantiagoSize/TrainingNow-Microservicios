@@ -1,8 +1,9 @@
 package com.tn.biblioteca.controller;
 
+import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -53,7 +54,7 @@ class EjercicioControllerIntegrationTest {
                 .andExpect(jsonPath("$.name").value("Zancadas"))
                 .andReturn().getResponse().getContentAsString();
 
-        long id = new com.fasterxml.jackson.databind.ObjectMapper().readTree(location).get("id").asLong();
+        long id = ((Number) JsonPath.read(location, "$.id")).longValue();
 
         mockMvc.perform(put("/api/exercises/" + id)
                         .contentType(MediaType.APPLICATION_JSON)

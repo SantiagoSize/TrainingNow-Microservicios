@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * API REST de usuarios. Contrato consumido por UserApi.kt (Android).
@@ -64,6 +65,49 @@ public class UserController {
     @PostMapping
     public ResponseEntity<UserDto> create(@Valid @RequestBody UserDto dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.create(dto));
+    }
+
+    /** Creación de usuarios con privilegios: requiere token JWT de un ADMIN activo. */
+    @PostMapping("/admin-create")
+    public ResponseEntity<UserDto> createByAdmin(
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @Valid @RequestBody UserDto dto) {
+        Long adminId = userService.requireActiveAdmin(authHeader);
+        return ResponseEntity.status(HttpStatus.CREATED).body(userService.createByAdmin(adminId, dto));
+    }
+
+    // ==================== Sanciones (solo admin con token) ====================
+
+    @PatchMapping("/{id}/ban")
+    public UserDto ban(@RequestHeader(value = "Authorization", required = false) String authHeader,
+                       @PathVariable Long id,
+                       @RequestBody Map<String, String> body) {
+        userService.requireActiveAdmin(authHeader);
+        return userService.banUser(id, body.getOrDefault("reason", "Sin motivo especificado"));
+    }
+
+    @PatchMapping("/{id}/unban")
+    public UserDto unban(@RequestHeader(value = "Authorization", required = false) String authHeader,
+                         @PathVariable Long id) {
+        userService.requireActiveAdmin(authHeader);
+        return userService.unbanUser(id);
+    }
+
+    @PatchMapping("/{id}/suspend")
+    public UserDto suspend(@RequestHeader(value = "Authorization", required = false) String authHeader,
+                           @PathVariable Long id,
+                           @RequestBody Map<String, Object> body) {
+        userService.requireActiveAdmin(authHeader);
+        Long until = body.get("untilMillis") instanceof Number n ? n.longValue() : null;
+        String reason = body.get("reason") instanceof String r ? r : "Sin motivo especificado";
+        return userService.suspendUser(id, until, reason);
+    }
+
+    @PatchMapping("/{id}/unsuspend")
+    public UserDto unsuspend(@RequestHeader(value = "Authorization", required = false) String authHeader,
+                             @PathVariable Long id) {
+        userService.requireActiveAdmin(authHeader);
+        return userService.unsuspendUser(id);
     }
 
     @PutMapping("/{id}")

@@ -3,7 +3,7 @@ package com.tn.usuarios.controller;
 import com.tn.usuarios.repository.PasswordResetCodeRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -23,23 +23,23 @@ class PasswordResetIntegrationTest {
 
     @Test
     void flujoCompleto_requestVerifyConfirm_yLoginConNuevaPassword() throws Exception {
-        // 1. Solicitar código (usuario seed user@user.tn)
+        // 1. Solicitar código (usuario seed usuario@gmail.com)
         mockMvc.perform(post("/api/users/password-reset/request")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"email": "user@user.tn"}
+                                {"email": "usuario@gmail.com"}
                                 """))
                 .andExpect(status().isOk());
 
         String code = codeRepository
-                .findTopByEmailIgnoreCaseAndUsedFalseOrderByCreatedAtDesc("user@user.tn")
+                .findTopByEmailIgnoreCaseAndUsedFalseOrderByCreatedAtDesc("usuario@gmail.com")
                 .orElseThrow().getCode();
 
         // 2. Verificar código
         mockMvc.perform(post("/api/users/password-reset/verify")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"email": "user@user.tn", "code": "%s"}
+                                {"email": "usuario@gmail.com", "code": "%s"}
                                 """.formatted(code)))
                 .andExpect(status().isOk());
 
@@ -47,7 +47,7 @@ class PasswordResetIntegrationTest {
         mockMvc.perform(post("/api/users/password-reset/confirm")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"email": "user@user.tn", "code": "%s", "newPassword": "nueva1234"}
+                                {"email": "usuario@gmail.com", "code": "%s", "newPassword": "nueva1234"}
                                 """.formatted(code)))
                 .andExpect(status().isOk());
 
@@ -55,16 +55,16 @@ class PasswordResetIntegrationTest {
         mockMvc.perform(post("/api/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"email": "user@user.tn", "password": "nueva1234"}
+                                {"email": "usuario@gmail.com", "password": "nueva1234"}
                                 """))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.email").value("user@user.tn"));
+                .andExpect(jsonPath("$.email").value("usuario@gmail.com"));
 
         // 5. El código ya no puede reutilizarse
         mockMvc.perform(post("/api/users/password-reset/confirm")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"email": "user@user.tn", "code": "%s", "newPassword": "otra1234"}
+                                {"email": "usuario@gmail.com", "code": "%s", "newPassword": "otra1234"}
                                 """.formatted(code)))
                 .andExpect(status().isBadRequest());
     }
@@ -84,14 +84,14 @@ class PasswordResetIntegrationTest {
         mockMvc.perform(post("/api/users/password-reset/request")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"email": "coach@coach.tn"}
+                                {"email": "entrenador@trainingnow.com"}
                                 """))
                 .andExpect(status().isOk());
 
         mockMvc.perform(post("/api/users/password-reset/verify")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"email": "coach@coach.tn", "code": "000000"}
+                                {"email": "entrenador@trainingnow.com", "code": "000000"}
                                 """))
                 .andExpect(status().isBadRequest());
     }

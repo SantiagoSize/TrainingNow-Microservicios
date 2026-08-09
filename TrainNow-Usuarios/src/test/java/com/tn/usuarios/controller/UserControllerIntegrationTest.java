@@ -1,21 +1,17 @@
 package com.tn.usuarios.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tn.usuarios.dto.UserDto;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.util.Map;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
- * Pruebas de integración del microservicio tn-usuarios (H2 en memoria).
+ * Pruebas de integración del microservicio TrainNow-Usuarios (H2 en memoria).
  * Verifica el contrato consumido por la app Android.
  */
 @SpringBootTest
@@ -23,17 +19,23 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class UserControllerIntegrationTest {
 
     @Autowired private MockMvc mockMvc;
-    @Autowired private ObjectMapper objectMapper;
 
-    private UserDto nuevoUsuario(String email) {
-        return UserDto.builder()
-                .role("USER")
-                .name("Test")
-                .lastName("Integracion")
-                .email(email)
-                .phone("+56911111111")
-                .password("test1234")
-                .build();
+    private String adminToken() throws Exception {
+        String resp = mockMvc.perform(post("/api/users/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"email": "admin@trainingnow.com", "password": "admin123"}
+                                """))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        return "Bearer " + com.jayway.jsonpath.JsonPath.read(resp, "$.token");
+    }
+
+    private String nuevoUsuarioJson(String email) {
+        return """
+                {"role": "USER", "name": "Test", "lastName": "Integracion",
+                 "email": "%s", "phone": "+56911111111", "password": "test1234"}
+                """.formatted(email);
     }
 
     @Test
@@ -48,23 +50,28 @@ class UserControllerIntegrationTest {
         String email = "nuevo@test.tn";
         mockMvc.perform(post("/api/users")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(nuevoUsuario(email))))
+                        .content(nuevoUsuarioJson(email)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.email").value(email))
                 .andExpect(jsonPath("$.id").isNumber());
 
         mockMvc.perform(post("/api/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(Map.of("email", email, "password", "test1234"))))
+                        .content("""
+                                {"email": "%s", "password": "test1234"}
+                                """.formatted(email)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.email").value(email));
+                .andExpect(jsonPath("$.email").value(email))
+                .andExpect(jsonPath("$.token").isNotEmpty());
     }
 
     @Test
     void login_credencialesInvalidas_401() throws Exception {
         mockMvc.perform(post("/api/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(Map.of("email", "admin@admin.tn", "password", "incorrecta"))))
+                        .content("""
+                                {"email": "admin@trainingnow.com", "password": "incorrecta"}
+                                """))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -72,12 +79,12 @@ class UserControllerIntegrationTest {
     void crearUsuario_emailDuplicado_409() throws Exception {
         mockMvc.perform(post("/api/users")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(nuevoUsuario("dup@test.tn"))))
+                        .content(nuevoUsuarioJson("dup@test.tn")))
                 .andExpect(status().isCreated());
 
         mockMvc.perform(post("/api/users")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(nuevoUsuario("dup@test.tn"))))
+                        .content(nuevoUsuarioJson("dup@test.tn")))
                 .andExpect(status().isConflict());
     }
 
@@ -96,12 +103,11 @@ class UserControllerIntegrationTest {
 
     @Test
     void trainerClients_crearYConsultar() throws Exception {
-        String body = """
-                {"trainerId": 2, "clientId": 3, "status": "ACTIVE", "sessionsPerWeek": 4}
-                """;
         mockMvc.perform(post("/api/trainer-clients")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
+                        .content("""
+                                {"trainerId": 2, "clientId": 3, "status": "ACTIVE", "sessionsPerWeek": 4}
+                                """))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.status").value("ACTIVE"));
 
@@ -112,5 +118,176 @@ class UserControllerIntegrationTest {
         mockMvc.perform(get("/api/trainer-clients/trainer/2/status/ACTIVE"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].sessionsPerWeek").value(4));
+    }
+
+    // ==================== Seguridad: creación de usuarios ====================
+
+    @Test
+    void registroPublico_conRolAdmin_seFuerzaAUser() throws Exception {
+        mockMvc.perform(post("/api/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"role": "ADMIN", "name": "Intruso", "email": "intruso@gmail.com", "password": "hack1234"}
+                                """))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.role").value("USER")); // rol forzado, sin privilegios
+    }
+
+    @Test
+    void registroPublico_conDominioCorporativo_403() throws Exception {
+        mockMvc.perform(post("/api/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"role": "USER", "name": "Falso", "email": "falso@trainingnow.com", "password": "hack1234"}
+                                """))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void adminCreate_porAdmin_creaEntrenador() throws Exception {
+        mockMvc.perform(post("/api/users/admin-create")
+                        .header("Authorization", adminToken())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"role": "TRAINER", "name": "Nuevo", "lastName": "Entrenador",
+                                 "email": "nuevo.entrenador@trainingnow.com", "password": "entrena123",
+                                 "specializations": "CrossFit"}
+                                """))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.role").value("TRAINER"))
+                .andExpect(jsonPath("$.email").value("nuevo.entrenador@trainingnow.com"));
+    }
+
+    @Test
+    void adminCreate_porUsuarioNormal_403() throws Exception {
+        // login del usuario normal para obtener SU token (sin privilegios)
+        String resp = mockMvc.perform(post("/api/users/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"email": "usuario@gmail.com", "password": "user123"}
+                                """))
+                .andReturn().getResponse().getContentAsString();
+        String userToken = "Bearer " + com.jayway.jsonpath.JsonPath.read(resp, "$.token");
+
+        mockMvc.perform(post("/api/users/admin-create")
+                        .header("Authorization", userToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"role": "ADMIN", "name": "Escalada", "email": "escalada@trainingnow.com", "password": "hack1234"}
+                                """))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void adminCreate_staffSinDominioCorporativo_400() throws Exception {
+        mockMvc.perform(post("/api/users/admin-create")
+                        .header("Authorization", adminToken())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"role": "TRAINER", "name": "Mal", "email": "mal@gmail.com",
+                                 "password": "entrena123", "specializations": "Fuerza"}
+                                """))
+                .andExpect(status().isBadRequest());
+    }
+
+    // ==================== Sanciones ====================
+
+    @Test
+    void banear_bloqueaLogin_yLevantarLoPermite() throws Exception {
+        String token = adminToken();
+        // crear víctima
+        mockMvc.perform(post("/api/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(nuevoUsuarioJson("baneado@test.tn")))
+                .andExpect(status().isCreated());
+        String resp = mockMvc.perform(post("/api/users/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"email": "baneado@test.tn", "password": "test1234"}
+                                """))
+                .andReturn().getResponse().getContentAsString();
+        long id = ((Number) com.jayway.jsonpath.JsonPath.read(resp, "$.id")).longValue();
+
+        // ban
+        mockMvc.perform(patch("/api/users/" + id + "/ban")
+                        .header("Authorization", token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"reason": "Conducta inapropiada"}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.isBanned").value(true));
+
+        // login bloqueado con mensaje
+        mockMvc.perform(post("/api/users/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"email": "baneado@test.tn", "password": "test1234"}
+                                """))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value(org.hamcrest.Matchers.containsString("baneada")));
+
+        // unban → login funciona
+        mockMvc.perform(patch("/api/users/" + id + "/unban").header("Authorization", token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.isBanned").value(false));
+        mockMvc.perform(post("/api/users/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"email": "baneado@test.tn", "password": "test1234"}
+                                """))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void suspender_bloqueaLogin_conFechaYMotivo() throws Exception {
+        String token = adminToken();
+        mockMvc.perform(post("/api/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(nuevoUsuarioJson("suspendido@test.tn")))
+                .andExpect(status().isCreated());
+        String resp = mockMvc.perform(post("/api/users/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"email": "suspendido@test.tn", "password": "test1234"}
+                                """))
+                .andReturn().getResponse().getContentAsString();
+        long id = ((Number) com.jayway.jsonpath.JsonPath.read(resp, "$.id")).longValue();
+        long hastaManana = System.currentTimeMillis() + 24 * 60 * 60 * 1000L;
+
+        mockMvc.perform(patch("/api/users/" + id + "/suspend")
+                        .header("Authorization", token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"untilMillis": %d, "reason": "Spam en chats"}
+                                """.formatted(hastaManana)))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(post("/api/users/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"email": "suspendido@test.tn", "password": "test1234"}
+                                """))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value(org.hamcrest.Matchers.containsString("suspendida")));
+
+        mockMvc.perform(patch("/api/users/" + id + "/unsuspend").header("Authorization", token))
+                .andExpect(status().isOk());
+        mockMvc.perform(post("/api/users/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"email": "suspendido@test.tn", "password": "test1234"}
+                                """))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void sancionar_sinToken_403() throws Exception {
+        mockMvc.perform(patch("/api/users/3/ban")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"reason": "x"}
+                                """))
+                .andExpect(status().isForbidden());
     }
 }

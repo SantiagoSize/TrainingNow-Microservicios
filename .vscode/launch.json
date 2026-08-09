@@ -1,0 +1,44 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-TnBibliotecaApplication<TrainNow-Biblioteca>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.tn.biblioteca.TnBibliotecaApplication",
+            "projectName": "TrainNow-Biblioteca",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-TnComunicacionesApplication<TrainNow-Comunicaciones>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.tn.comunicaciones.TnComunicacionesApplication",
+            "projectName": "TrainNow-Comunicaciones",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-TnRutinasApplication<TrainNow-Rutinas>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.tn.rutinas.TnRutinasApplication",
+            "projectName": "TrainNow-Rutinas",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-TnUsuariosApplication<TrainNow-Usuarios>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.tn.usuarios.TnUsuariosApplication",
+            "projectName": "TrainNow-Usuarios",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

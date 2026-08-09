@@ -29,6 +29,11 @@ public class UserDto {
     private String suspendReason;
     private Boolean isBanned;
     private String banReason;
+    private Long createdAt;
+    private Long updatedAt;
+
+    /** Token JWT: solo se envía en la respuesta del login. */
+    private String token;
 
     public static UserDto fromEntity(User u) {
         return UserDto.builder()
@@ -49,6 +54,8 @@ public class UserDto {
                 .suspendReason(u.getSuspendReason())
                 .isBanned(u.getIsBanned())
                 .banReason(u.getBanReason())
+                .createdAt(u.getCreatedAt())
+                .updatedAt(u.getUpdatedAt())
                 .build();
     }
 

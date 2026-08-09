@@ -1,9 +1,9 @@
 package com.tn.rutinas.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -19,7 +19,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class RutinaWorkoutIntegrationTest {
 
     @Autowired private MockMvc mockMvc;
-    @Autowired private ObjectMapper objectMapper;
 
     @Test
     void rutinasPublicas_devuelveSeed() throws Exception {
@@ -39,7 +38,7 @@ class RutinaWorkoutIntegrationTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.name").value("Push Pull Legs"))
                 .andReturn().getResponse().getContentAsString();
-        long id = objectMapper.readTree(resp).get("id").asLong();
+        long id = ((Number) JsonPath.read(resp, "$.id")).longValue();
 
         String ejercicios = """
                 [{"routineId": %d, "exerciseId": 1, "order": 0},
@@ -71,7 +70,7 @@ class RutinaWorkoutIntegrationTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.status").value("IN_PROGRESS"))
                 .andReturn().getResponse().getContentAsString();
-        long sessionId = objectMapper.readTree(resp).get("id").asLong();
+        long sessionId = ((Number) JsonPath.read(resp, "$.id")).longValue();
 
         String log = """
                 {"sessionId": %d, "exerciseId": 1, "orderInSession": 0,

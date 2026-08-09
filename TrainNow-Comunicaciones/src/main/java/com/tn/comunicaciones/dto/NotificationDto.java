@@ -1,6 +1,8 @@
 package com.tn.comunicaciones.dto;
 
 import com.tn.comunicaciones.model.Notificacion;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 /** DTO de notificación. Contrato exacto con el cliente Android. */
@@ -11,8 +13,11 @@ import lombok.*;
 public class NotificationDto {
 
     private Long id;
+    @NotNull(message = "El userId es obligatorio")
     private Long userId;
+    @NotBlank(message = "El título es obligatorio")
     private String title;
+    @NotBlank(message = "El mensaje es obligatorio")
     private String message;
     private String type;
     private Long date;
