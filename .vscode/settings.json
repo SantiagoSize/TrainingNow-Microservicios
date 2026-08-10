@@ -1,5 +1,6 @@
 {
     // Actualiza la configuracion del proyecto automaticamente cuando cambia un pom.xml
     // (elimina el aviso "Project configuration is not up-to-date")
-    "java.configuration.updateBuildConfiguration": "automatic"
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "java.compile.nullAnalysis.mode": "automatic"
 }
