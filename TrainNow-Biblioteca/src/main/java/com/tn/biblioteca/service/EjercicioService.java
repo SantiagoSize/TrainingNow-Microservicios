@@ -52,6 +52,16 @@ public class EjercicioService {
         existing.setCategory(dto.getCategory());
         existing.setDescription(dto.getDescription());
         existing.setVideoUrl(dto.getVideoUrl());
+        existing.setImageUrl(dto.getImageUrl());
+        existing.setMuscles(dto.getMuscles());
+        existing.setDifficulty(dto.getDifficulty() != null ? dto.getDifficulty() : existing.getDifficulty());
+        existing.setEquipment(dto.getEquipment());
+        existing.setInstructions(dto.getInstructions());
+        existing.setTips(dto.getTips());
+        existing.setCommonMistakes(dto.getCommonMistakes());
+        existing.setRecommendedSets(dto.getRecommendedSets() != null ? dto.getRecommendedSets() : existing.getRecommendedSets());
+        existing.setRecommendedReps(dto.getRecommendedReps());
+        existing.setRestSeconds(dto.getRestSeconds() != null ? dto.getRestSeconds() : existing.getRestSeconds());
         existing.setIsSystemDefault(dto.getIsSystemDefault() != null ? dto.getIsSystemDefault() : existing.getIsSystemDefault());
         return ExerciseDto.fromEntity(repository.save(existing));
     }

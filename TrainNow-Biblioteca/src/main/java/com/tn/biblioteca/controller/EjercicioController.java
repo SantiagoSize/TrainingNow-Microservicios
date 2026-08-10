@@ -19,6 +19,7 @@ import java.util.List;
 public class EjercicioController {
 
     private final EjercicioService service;
+    private final com.tn.biblioteca.security.JwtValidator jwtValidator;
 
     @GetMapping
     public List<ExerciseDto> getAll() {
@@ -40,18 +41,30 @@ public class EjercicioController {
         return service.getById(id);
     }
 
+    // ===== Escritura: solo administradores (token JWT de TrainNow-Usuarios) =====
+
     @PostMapping
-    public ResponseEntity<ExerciseDto> create(@Valid @RequestBody ExerciseDto dto) {
+    public ResponseEntity<ExerciseDto> create(
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @Valid @RequestBody ExerciseDto dto) {
+        jwtValidator.requireAdmin(authHeader);
         return ResponseEntity.status(HttpStatus.CREATED).body(service.create(dto));
     }
 
     @PutMapping("/{id}")
-    public ExerciseDto update(@PathVariable Long id, @RequestBody ExerciseDto dto) {
+    public ExerciseDto update(
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @PathVariable Long id,
+            @RequestBody ExerciseDto dto) {
+        jwtValidator.requireAdmin(authHeader);
         return service.update(id, dto);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @PathVariable Long id) {
+        jwtValidator.requireAdmin(authHeader);
         service.delete(id);
         return ResponseEntity.noContent().build();
     }

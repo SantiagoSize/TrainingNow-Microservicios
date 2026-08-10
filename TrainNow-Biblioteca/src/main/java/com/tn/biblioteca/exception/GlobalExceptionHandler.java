@@ -20,6 +20,11 @@ public class GlobalExceptionHandler {
         return body(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
+    @ExceptionHandler(ForbiddenOperationException.class)
+    public ResponseEntity<Map<String, String>> forbidden(ForbiddenOperationException ex) {
+        return body(HttpStatus.FORBIDDEN, ex.getMessage());
+    }
+
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<Map<String, String>> integrity(DataIntegrityViolationException ex) {
         return body(HttpStatus.CONFLICT, "Conflicto de datos");

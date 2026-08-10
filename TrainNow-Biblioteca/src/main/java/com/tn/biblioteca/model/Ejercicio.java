@@ -32,6 +32,43 @@ public class Ejercicio {
 
     private String videoUrl;
 
+    /** Imagen del ejercicio: URL pública o data URI comprimido (JPEG base64, máx ~120 KB). */
+    @Column(columnDefinition = "TEXT")
+    private String imageUrl;
+
+    /** Músculos trabajados (CSV). */
+    private String muscles;
+
+    /** Nivel: PRINCIPIANTE, INTERMEDIO, AVANZADO. */
+    @Builder.Default
+    private String difficulty = "PRINCIPIANTE";
+
+    /** Equipamiento necesario. */
+    private String equipment;
+
+    /** Pasos de ejecución, separados por "|". */
+    @Column(columnDefinition = "TEXT")
+    private String instructions;
+
+    /** Consejos de técnica, separados por "|". */
+    @Column(columnDefinition = "TEXT")
+    private String tips;
+
+    /** Errores frecuentes, separados por "|". */
+    @Column(columnDefinition = "TEXT")
+    private String commonMistakes;
+
+    /** Series recomendadas. */
+    @Builder.Default
+    private Integer recommendedSets = 3;
+
+    /** Repeticiones recomendadas (texto: "8-12", "30 seg"). */
+    private String recommendedReps;
+
+    /** Descanso recomendado entre series, en segundos. */
+    @Builder.Default
+    private Integer restSeconds = 60;
+
     /** true = ejercicio del sistema; false = creado por un usuario/coach. */
     @Builder.Default
     private Boolean isSystemDefault = true;
