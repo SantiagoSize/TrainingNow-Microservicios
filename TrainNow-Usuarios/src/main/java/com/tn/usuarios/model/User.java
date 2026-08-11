@@ -37,12 +37,15 @@ public class User {
     @Email(message = "El email debe ser válido")
     private String email;
 
-    private String phone;
+    @Builder.Default
+    private String phone = "";
 
     @Column(nullable = false)
     @NotBlank(message = "La contraseña es obligatoria")
     private String password;
 
+    /** URL pública o data URI comprimido (JPEG/PNG base64, máx ~80 KB). */
+    @Column(columnDefinition = "TEXT")
     private String profilePhotoUrl;
 
     /** Fecha de nacimiento en epoch millis (contrato de la app). */
@@ -77,6 +80,7 @@ public class User {
         createdAt = now;
         updatedAt = now;
         if (isBanned == null) isBanned = false;
+        if (phone == null) phone = "";
     }
 
     @PreUpdate
