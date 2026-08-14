@@ -3,7 +3,9 @@ package com.tn.usuarios.config;
 import com.tn.usuarios.model.User;
 import com.tn.usuarios.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -25,10 +27,12 @@ import java.util.List;
  */
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class DataLoader implements CommandLineRunner {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JdbcTemplate jdbcTemplate;
 
     /** Cuentas base/demo que deben mostrar un avatar generado si aún no tienen foto. */
     private static final List<String> EMAILS_CON_AVATAR_AUTOMATICO = Arrays.asList(
@@ -48,6 +52,7 @@ public class DataLoader implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
+        asegurarColumnaFotoAmplia();
         repararTelefonosNulos();
 
         if (userRepository.count() == 0) {
@@ -79,6 +84,23 @@ public class DataLoader implements CommandLineRunner {
 
         crearUsuariosDeMuestra();
         repararFotosDePerfil();
+    }
+
+    /**
+     * @Column(columnDefinition = "TEXT") en User.profilePhotoUrl no basta: con
+     * spring.jpa.hibernate.ddl-auto=update, Hibernate crea columnas nuevas pero NO altera el
+     * tipo de una columna que ya existía como VARCHAR(255) (limitación conocida del modo
+     * "update"). Si esta columna ya quedó creada como VARCHAR(255) en una ejecución anterior,
+     * cualquier avatar/foto en base64 la revienta con "Data too long". Se fuerza aquí el ALTER
+     * TABLE de forma idempotente y segura (no falla si la columna ya es TEXT).
+     */
+    private void asegurarColumnaFotoAmplia() {
+        try {
+            jdbcTemplate.execute("ALTER TABLE users MODIFY COLUMN profile_photo_url TEXT");
+            log.info("Columna profile_photo_url verificada/ampliada a TEXT");
+        } catch (Exception e) {
+            log.warn("No se pudo ampliar la columna profile_photo_url a TEXT: {}", e.getMessage());
+        }
     }
 
     /**
@@ -183,7 +205,12 @@ public class DataLoader implements CommandLineRunner {
             String avatar = generarAvatarDataUri(iniciales, color);
             if (avatar != null) u.setProfilePhotoUrl(avatar);
         });
-        userRepository.saveAll(sinFoto);
+        try {
+            userRepository.saveAll(sinFoto);
+        } catch (Exception e) {
+            // No debe tumbar el arranque del microservicio por un problema al generar avatares.
+            log.warn("No se pudieron guardar los avatares generados: {}", e.getMessage());
+        }
     }
 
     private String obtenerIniciales(String nombre, String apellido) {

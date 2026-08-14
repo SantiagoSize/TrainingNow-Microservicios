@@ -25,12 +25,16 @@ public class UserDto {
     private Double weight;
     private String gender;
     private String specializations;
+    /** Descripción/bio libre que el entrenador escribe para su perfil público. */
+    private String bio;
     private Long suspendedUntil;
     private String suspendReason;
     private Boolean isBanned;
     private String banReason;
     private Long createdAt;
     private Long updatedAt;
+    /** Última vez que la app hizo "heartbeat" con este usuario en primer plano (ver User.lastActiveAt). */
+    private Long lastActiveAt;
 
     /** Token JWT: solo se envía en la respuesta del login. */
     private String token;
@@ -50,12 +54,14 @@ public class UserDto {
                 .weight(u.getWeight())
                 .gender(u.getGender())
                 .specializations(u.getSpecializations())
+                .bio(u.getBio())
                 .suspendedUntil(u.getSuspendedUntil())
                 .suspendReason(u.getSuspendReason())
                 .isBanned(u.getIsBanned())
                 .banReason(u.getBanReason())
                 .createdAt(u.getCreatedAt())
                 .updatedAt(u.getUpdatedAt())
+                .lastActiveAt(u.getLastActiveAt())
                 .build();
     }
 
@@ -74,6 +80,7 @@ public class UserDto {
                 .weight(weight)
                 .gender(gender)
                 .specializations(specializations)
+                .bio(bio)
                 .suspendedUntil(suspendedUntil)
                 .suspendReason(suspendReason)
                 .isBanned(isBanned != null ? isBanned : false)

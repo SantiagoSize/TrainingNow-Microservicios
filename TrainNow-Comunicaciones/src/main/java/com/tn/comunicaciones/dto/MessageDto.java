@@ -26,6 +26,12 @@ public class MessageDto {
     private Long timestamp;
     private Boolean isRead;
 
+    /** URL relativa del adjunto (ej. "/uploads/chat/xxx.jpg"). Null si es solo texto. */
+    private String attachmentUrl;
+
+    /** "IMAGE" o "VIDEO". Null si es solo texto. */
+    private String attachmentType;
+
     public static MessageDto fromEntity(Mensaje m) {
         return MessageDto.builder()
                 .id(m.getId())
@@ -34,6 +40,8 @@ public class MessageDto {
                 .content(m.getContent())
                 .timestamp(m.getTimestamp())
                 .isRead(m.getIsRead())
+                .attachmentUrl(m.getAttachmentUrl())
+                .attachmentType(m.getAttachmentType())
                 .build();
     }
 
@@ -45,6 +53,8 @@ public class MessageDto {
                 .content(content)
                 .timestamp(timestamp)
                 .isRead(isRead != null ? isRead : false)
+                .attachmentUrl(attachmentUrl)
+                .attachmentType(attachmentType)
                 .build();
     }
 }

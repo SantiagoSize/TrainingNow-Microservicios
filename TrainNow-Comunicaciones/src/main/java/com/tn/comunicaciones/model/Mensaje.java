@@ -41,6 +41,14 @@ public class Mensaje {
     @Builder.Default
     private Boolean isRead = false;
 
+    /** URL relativa del adjunto (ej. "/uploads/chat/xxx.jpg"), servida como recurso estático. */
+    @Column(length = 300)
+    private String attachmentUrl;
+
+    /** "IMAGE" o "VIDEO". Null si el mensaje es solo texto. */
+    @Column(length = 20)
+    private String attachmentType;
+
     @PrePersist
     void onCreate() {
         if (timestamp == null) timestamp = System.currentTimeMillis();

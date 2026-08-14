@@ -59,6 +59,10 @@ public class User {
     @Column(length = 500)
     private String specializations;
 
+    /** Descripción/bio libre que el entrenador escribe para su perfil público. */
+    @Column(length = 1000)
+    private String bio;
+
     // ===== Sanciones (admin) =====
     private Long suspendedUntil;
     private String suspendReason;
@@ -73,6 +77,11 @@ public class User {
 
     @Column(nullable = false)
     private Long updatedAt;
+
+    /** Última vez que la app mandó un "heartbeat" (ping) con este usuario en primer plano.
+     *  Se usa para mostrar "Conectado"/"Desconectado" en el chat: si pasaron menos de ~60s
+     *  desde este valor, se considera que sigue conectado. */
+    private Long lastActiveAt;
 
     @PrePersist
     void onCreate() {

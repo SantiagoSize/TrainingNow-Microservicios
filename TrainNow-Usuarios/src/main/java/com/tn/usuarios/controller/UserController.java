@@ -115,6 +115,13 @@ public class UserController {
         return userService.update(id, dto);
     }
 
+    /** Ping de presencia: la app lo llama periódicamente mientras está en primer plano. */
+    @PatchMapping("/{id}/heartbeat")
+    public ResponseEntity<Void> heartbeat(@PathVariable Long id) {
+        userService.heartbeat(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         userService.delete(id);

@@ -148,6 +148,17 @@ public class UserService {
         userRepository.delete(findOrThrow(id));
     }
 
+    /**
+     * "Heartbeat" de presencia: la app llama esto cada cierto tiempo mientras el usuario
+     * tiene la app abierta, para que otros (ej. en el chat) puedan ver si sigue conectado.
+     * No valida token a propósito: es un ping de bajo costo, no una operación sensible.
+     */
+    public void heartbeat(Long id) {
+        User user = findOrThrow(id);
+        user.setLastActiveAt(System.currentTimeMillis());
+        userRepository.save(user);
+    }
+
     @Transactional(readOnly = true)
     public UserDto login(String email, String rawPassword) {
         User user = userRepository.findByEmailIgnoreCase(email == null ? "" : email.trim())
