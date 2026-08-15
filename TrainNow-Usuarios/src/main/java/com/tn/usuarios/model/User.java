@@ -63,6 +63,11 @@ public class User {
     @Column(length = 1000)
     private String bio;
 
+    /** Imagen promocional (distinta de la foto de perfil) que el entrenador muestra
+     *  en su tarjeta pública dentro de "Mis chats" de los usuarios. Data URI o URL. */
+    @Column(columnDefinition = "TEXT")
+    private String promoImageUrl;
+
     // ===== Sanciones (admin) =====
     private Long suspendedUntil;
     private String suspendReason;

@@ -17,6 +17,10 @@ public class RoutineDto {
     private String dayInfo;
     private Long creationDate;
     private Long scheduledTime;
+    /** true = compartida por un entrenador, pendiente de que el usuario la acepte. */
+    private Boolean pendingShare;
+    /** true = plantilla reutilizable del entrenador (no es rutina global de admin). */
+    private Boolean isTemplate;
 
     public static RoutineDto fromEntity(Rutina r) {
         return RoutineDto.builder()
@@ -27,6 +31,8 @@ public class RoutineDto {
                 .dayInfo(r.getDayInfo())
                 .creationDate(r.getCreationDate())
                 .scheduledTime(r.getScheduledTime())
+                .pendingShare(r.getPendingShare())
+                .isTemplate(r.getIsTemplate())
                 .build();
     }
 
@@ -39,6 +45,8 @@ public class RoutineDto {
                 .dayInfo(dayInfo)
                 .creationDate(creationDate)
                 .scheduledTime(scheduledTime)
+                .pendingShare(pendingShare != null ? pendingShare : false)
+                .isTemplate(isTemplate != null ? isTemplate : false)
                 .build();
     }
 }

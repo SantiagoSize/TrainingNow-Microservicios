@@ -19,6 +19,7 @@ public class ExerciseDto {
     private String muscles;
     private String difficulty;
     private String equipment;
+    private String alternatives;
     private String instructions;
     private String tips;
     private String commonMistakes;
@@ -38,6 +39,7 @@ public class ExerciseDto {
                 .muscles(e.getMuscles())
                 .difficulty(e.getDifficulty())
                 .equipment(e.getEquipment())
+                .alternatives(e.getAlternatives())
                 .instructions(e.getInstructions())
                 .tips(e.getTips())
                 .commonMistakes(e.getCommonMistakes())
@@ -59,6 +61,7 @@ public class ExerciseDto {
                 .muscles(muscles)
                 .difficulty(difficulty != null ? difficulty : "PRINCIPIANTE")
                 .equipment(equipment)
+                .alternatives(alternatives)
                 .instructions(instructions)
                 .tips(tips)
                 .commonMistakes(commonMistakes)

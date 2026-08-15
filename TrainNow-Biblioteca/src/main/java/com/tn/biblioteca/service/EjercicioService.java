@@ -56,6 +56,7 @@ public class EjercicioService {
         existing.setMuscles(dto.getMuscles());
         existing.setDifficulty(dto.getDifficulty() != null ? dto.getDifficulty() : existing.getDifficulty());
         existing.setEquipment(dto.getEquipment());
+        existing.setAlternatives(dto.getAlternatives());
         existing.setInstructions(dto.getInstructions());
         existing.setTips(dto.getTips());
         existing.setCommonMistakes(dto.getCommonMistakes());

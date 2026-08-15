@@ -45,12 +45,24 @@ public class Rutina {
     @Column(nullable = false)
     private Long updatedAt;
 
+    /** true = un entrenador la compartió con ownerId pero el usuario todavía no la acepta.
+     *  No debe aparecer en "Mis rutinas" hasta que pase a false. */
+    @Builder.Default
+    private Boolean pendingShare = false;
+
+    /** true = plantilla reutilizable de un entrenador (ownerId null, no es una rutina global
+     *  admin). El entrenador la comparte con distintos usuarios sin volver a crearla. */
+    @Builder.Default
+    private Boolean isTemplate = false;
+
     @PrePersist
     void onCreate() {
         long now = System.currentTimeMillis();
         createdAt = now;
         updatedAt = now;
         if (creationDate == null) creationDate = now;
+        if (pendingShare == null) pendingShare = false;
+        if (isTemplate == null) isTemplate = false;
     }
 
     @PreUpdate

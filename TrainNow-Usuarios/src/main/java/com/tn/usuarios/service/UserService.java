@@ -110,19 +110,17 @@ public class UserService {
         return email != null && email.trim().toLowerCase().endsWith(STAFF_DOMAIN);
     }
 
+    /**
+     * Edición de perfil (self-service, sin token de admin). Email y rol son
+     * intencionalmente inmutables por esta vía: ningún usuario (ni admin ni
+     * entrenador) puede cambiarse su propio correo o escalar su rol editando
+     * su perfil. Cambios de rol solo existen al crear la cuenta (createByAdmin).
+     */
     public UserDto update(Long id, UserDto dto) {
         User existing = findOrThrow(id);
 
-        // Email único si cambió
-        if (dto.getEmail() != null && !dto.getEmail().equalsIgnoreCase(existing.getEmail())
-                && userRepository.existsByEmailIgnoreCase(dto.getEmail())) {
-            throw new DuplicateEmailException("El email ya existe: " + dto.getEmail());
-        }
-
-        existing.setRole(dto.getRole() != null ? dto.getRole() : existing.getRole());
         existing.setName(dto.getName());
         existing.setLastName(dto.getLastName());
-        existing.setEmail(dto.getEmail() != null ? dto.getEmail() : existing.getEmail());
         existing.setPhone(dto.getPhone());
         existing.setProfilePhotoUrl(dto.getProfilePhotoUrl());
         existing.setBirthDate(dto.getBirthDate());
@@ -130,6 +128,8 @@ public class UserService {
         existing.setWeight(dto.getWeight());
         existing.setGender(dto.getGender());
         existing.setSpecializations(dto.getSpecializations());
+        existing.setBio(dto.getBio());
+        existing.setPromoImageUrl(dto.getPromoImageUrl());
         existing.setSuspendedUntil(dto.getSuspendedUntil());
         existing.setSuspendReason(dto.getSuspendReason());
         existing.setIsBanned(dto.getIsBanned() != null ? dto.getIsBanned() : false);

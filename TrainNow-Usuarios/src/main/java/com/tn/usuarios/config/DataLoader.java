@@ -1,6 +1,8 @@
 package com.tn.usuarios.config;
 
+import com.tn.usuarios.model.TrainerClient;
 import com.tn.usuarios.model.User;
+import com.tn.usuarios.repository.TrainerClientRepository;
 import com.tn.usuarios.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,11 +21,18 @@ import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Seed inicial: admin, entrenador y usuario de prueba (solo si la tabla está vacía),
  * más un set de usuarios de muestra para demostración (idempotente: se agregan aunque
  * ya existan otros usuarios, pero no se duplican si ya fueron creados).
+ *
+ * Roster completo de cuentas de muestra (para probar los 3 roles sin errores de login):
+ * 3 usuarios normales, 3 entrenadores y 2 administradores, todos con nombre y apellido
+ * reales (nada de "Usuario 1"/"Usuario 2"). También se seedean relaciones
+ * entrenador-cliente para que las listas de "mis clientes"/"mi entrenador" y el chat
+ * no queden vacías al probar.
  */
 @Component
 @RequiredArgsConstructor
@@ -31,6 +40,7 @@ import java.util.List;
 public class DataLoader implements CommandLineRunner {
 
     private final UserRepository userRepository;
+    private final TrainerClientRepository trainerClientRepository;
     private final PasswordEncoder passwordEncoder;
     private final JdbcTemplate jdbcTemplate;
 
@@ -38,7 +48,8 @@ public class DataLoader implements CommandLineRunner {
     private static final List<String> EMAILS_CON_AVATAR_AUTOMATICO = Arrays.asList(
             "admin@trainingnow.com", "entrenador@trainingnow.com", "usuario@gmail.com",
             "maria.gonzalez@gmail.com", "diego.munoz@gmail.com",
-            "camila.herrera@gmail.com", "valentina.soto@trainingnow.com"
+            "valentina.soto@trainingnow.com", "rodrigo.fuentes@trainingnow.com",
+            "francisca.torres@trainingnow.com"
     );
 
     private static final Color[] PALETA_AVATAR = {
@@ -50,10 +61,28 @@ public class DataLoader implements CommandLineRunner {
             new Color(0x00838F)  // turquesa
     };
 
+    /** Datos físicos de respaldo para completar cuentas que quedaron con campos en NULL. */
+    private record DatosDemograficos(
+            String email, String phone, String gender, double height, double weight,
+            int anio, int mes, int dia
+    ) {}
+
+    private static final List<DatosDemograficos> DATOS_DEMOGRAFICOS = List.of(
+            new DatosDemograficos("admin@trainingnow.com", "+56900001111", "Masculino", 178, 80, 1988, 5, 10),
+            new DatosDemograficos("entrenador@trainingnow.com", "+56911112222", "Masculino", 180, 82, 1990, 2, 18),
+            new DatosDemograficos("usuario@gmail.com", "+56922223333", "Masculino", 175, 74, 1999, 3, 20),
+            new DatosDemograficos("maria.gonzalez@gmail.com", "+56912345678", "Femenino", 165, 62.5, 1998, 3, 14),
+            new DatosDemograficos("diego.munoz@gmail.com", "+56987654321", "Masculino", 178, 78, 1995, 7, 22),
+            new DatosDemograficos("valentina.soto@trainingnow.com", "+56955667788", "Femenino", 168, 60, 1993, 9, 25),
+            new DatosDemograficos("rodrigo.fuentes@trainingnow.com", "+56966778899", "Masculino", 182, 85, 1991, 11, 30),
+            new DatosDemograficos("francisca.torres@trainingnow.com", "+56911223344", "Femenino", 163, 58, 1996, 8, 8)
+    );
+
     @Override
     public void run(String... args) {
         asegurarColumnaFotoAmplia();
         repararTelefonosNulos();
+        repararNombresBase();
 
         if (userRepository.count() == 0) {
             userRepository.save(User.builder()
@@ -67,22 +96,25 @@ public class DataLoader implements CommandLineRunner {
             userRepository.save(User.builder()
                     .role("TRAINER")
                     .name("Carlos")
-                    .lastName("Entrenador")
+                    .lastName("Mendoza Silva")
                     .email("entrenador@trainingnow.com")
                     .password(passwordEncoder.encode("entrenador123"))
                     .specializations("Fuerza,Hipertrofia")
+                    .bio("Entrenador certificado con foco en fuerza e hipertrofia. Te ayudo a progresar con rutinas simples y sostenibles.")
                     .build());
 
             userRepository.save(User.builder()
                     .role("USER")
                     .name("Santiago")
-                    .lastName("Usuario")
+                    .lastName("Vargas Reyes")
                     .email("usuario@gmail.com")
                     .password(passwordEncoder.encode("user123"))
                     .build());
         }
 
         crearUsuariosDeMuestra();
+        completarDatosDemograficos();
+        crearRelacionesEntrenadorCliente();
         repararFotosDePerfil();
     }
 
@@ -118,10 +150,36 @@ public class DataLoader implements CommandLineRunner {
     }
 
     /**
+     * Las cuentas base (admin/entrenador/usuario) solo se crean una vez, cuando la tabla
+     * está vacía (ver arriba). En instalaciones que ya tenían esas 3 cuentas de antes, el
+     * apellido quedó con el placeholder original ("Entrenador"/"Usuario") aunque el código
+     * ya use uno real: este método corrige esas filas existentes en cada arranque, igual
+     * que repararTelefonosNulos().
+     */
+    private void repararNombresBase() {
+        userRepository.findByEmailIgnoreCase("entrenador@trainingnow.com").ifPresent(u -> {
+            if ("Entrenador".equals(u.getLastName())) {
+                u.setLastName("Mendoza Silva");
+                userRepository.save(u);
+            }
+        });
+        userRepository.findByEmailIgnoreCase("usuario@gmail.com").ifPresent(u -> {
+            if ("Usuario".equals(u.getLastName())) {
+                u.setLastName("Vargas Reyes");
+                userRepository.save(u);
+            }
+        });
+    }
+
+    /**
      * Usuarios de muestra con datos completos (nombre, apellidos, teléfono, datos físicos)
      * para dejar la app lista con contenido de demostración. Se crean una sola vez por email
      * (no dependen de que la tabla esté vacía), así que quedan disponibles aunque ya existan
      * las cuentas base de admin/entrenador/usuario.
+     *
+     * Junto con las 3 cuentas base de arriba, el roster completo queda en: 3 usuarios
+     * normales (Santiago, María Fernanda, Diego Andrés), 3 entrenadores (Carlos, Valentina,
+     * Rodrigo) y 2 administradores (Admin TrainingNow, Francisca).
      */
     private void crearUsuariosDeMuestra() {
         crearSiNoExiste(User.builder()
@@ -151,19 +209,6 @@ public class DataLoader implements CommandLineRunner {
                 .build());
 
         crearSiNoExiste(User.builder()
-                .role("USER")
-                .name("Camila Paz")
-                .lastName("Herrera Lagos")
-                .email("camila.herrera@gmail.com")
-                .phone("+56933221144")
-                .password(passwordEncoder.encode("demo123"))
-                .gender("Femenino")
-                .height(160.0)
-                .weight(58.0)
-                .birthDate(epochMillis(2000, 11, 5))
-                .build());
-
-        crearSiNoExiste(User.builder()
                 .role("TRAINER")
                 .name("Valentina")
                 .lastName("Soto Pizarro")
@@ -171,12 +216,99 @@ public class DataLoader implements CommandLineRunner {
                 .phone("+56955667788")
                 .password(passwordEncoder.encode("demo123"))
                 .specializations("Yoga,Movilidad,Rehabilitación")
+                .bio("Especialista en movilidad y rehabilitación de lesiones. Clases de yoga para complementar tu entrenamiento de fuerza.")
                 .build());
+
+        crearSiNoExiste(User.builder()
+                .role("TRAINER")
+                .name("Rodrigo")
+                .lastName("Fuentes Aravena")
+                .email("rodrigo.fuentes@trainingnow.com")
+                .phone("+56966778899")
+                .password(passwordEncoder.encode("demo123"))
+                .specializations("Crossfit,Acondicionamiento Físico,Pérdida de grasa")
+                .bio("Entreno gente común que quiere sentirse mejor: fuerza funcional, resistencia y hábitos que se mantienen en el tiempo.")
+                .build());
+
+        crearSiNoExiste(User.builder()
+                .role("ADMIN")
+                .name("Francisca")
+                .lastName("Torres Bravo")
+                .email("francisca.torres@trainingnow.com")
+                .phone("+56911223344")
+                .password(passwordEncoder.encode("demo123"))
+                .build());
+    }
+
+    /**
+     * Completa teléfono, género, altura, peso y fecha de nacimiento de las cuentas base/demo
+     * que quedaron con esos campos en NULL (ej. las 3 cuentas base, creadas antes de tener
+     * datos físicos, o cuentas demo agregadas en una versión anterior de este seed). Solo
+     * rellena lo que esté vacío: si el usuario ya editó su perfil desde la app, no se pisa
+     * nada. Se ejecuta en cada arranque, igual que repararTelefonosNulos/repararNombresBase.
+     */
+    private void completarDatosDemograficos() {
+        for (DatosDemograficos d : DATOS_DEMOGRAFICOS) {
+            userRepository.findByEmailIgnoreCase(d.email()).ifPresent(u -> {
+                boolean cambio = false;
+                if (u.getPhone() == null || u.getPhone().isBlank()) {
+                    u.setPhone(d.phone());
+                    cambio = true;
+                }
+                if (u.getGender() == null) {
+                    u.setGender(d.gender());
+                    cambio = true;
+                }
+                if (u.getHeight() == null) {
+                    u.setHeight(d.height());
+                    cambio = true;
+                }
+                if (u.getWeight() == null) {
+                    u.setWeight(d.weight());
+                    cambio = true;
+                }
+                if (u.getBirthDate() == null) {
+                    u.setBirthDate(epochMillis(d.anio(), d.mes(), d.dia()));
+                    cambio = true;
+                }
+                if (cambio) userRepository.save(u);
+            });
+        }
     }
 
     private void crearSiNoExiste(User user) {
         if (userRepository.existsByEmailIgnoreCase(user.getEmail())) return;
         userRepository.save(user);
+    }
+
+    /**
+     * Relaciones entrenador-cliente de muestra: así "mis clientes" (entrenador) y "mi
+     * entrenador" (usuario) no quedan vacíos al probar, y se puede abrir un chat real entre
+     * cuentas ya vinculadas sin tener que crear la relación a mano primero.
+     */
+    private void crearRelacionesEntrenadorCliente() {
+        vincular("entrenador@trainingnow.com", "usuario@gmail.com", "ACTIVE", 4);
+        vincular("entrenador@trainingnow.com", "maria.gonzalez@gmail.com", "ACTIVE", 3);
+        vincular("valentina.soto@trainingnow.com", "diego.munoz@gmail.com", "ACTIVE", 2);
+        vincular("rodrigo.fuentes@trainingnow.com", "usuario@gmail.com", "PENDING", 3);
+    }
+
+    private void vincular(String emailEntrenador, String emailCliente, String status, int sesionesPorSemana) {
+        Optional<User> trainer = userRepository.findByEmailIgnoreCase(emailEntrenador);
+        Optional<User> client = userRepository.findByEmailIgnoreCase(emailCliente);
+        if (trainer.isEmpty() || client.isEmpty()) return;
+
+        Long trainerId = trainer.get().getId();
+        Long clientId = client.get().getId();
+        if (trainerClientRepository.findByTrainerIdAndClientId(trainerId, clientId).isPresent()) return;
+
+        trainerClientRepository.save(TrainerClient.builder()
+                .trainerId(trainerId)
+                .clientId(clientId)
+                .status(status)
+                .sessionsPerWeek(sesionesPorSemana)
+                .startDate(System.currentTimeMillis())
+                .build());
     }
 
     private long epochMillis(int year, int month, int day) {

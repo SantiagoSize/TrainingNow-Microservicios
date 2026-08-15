@@ -60,6 +60,8 @@ public class RutinaService {
         existing.setName(dto.getName());
         existing.setDayInfo(dto.getDayInfo());
         existing.setScheduledTime(dto.getScheduledTime());
+        if (dto.getPendingShare() != null) existing.setPendingShare(dto.getPendingShare());
+        if (dto.getIsTemplate() != null) existing.setIsTemplate(dto.getIsTemplate());
         return RoutineDto.fromEntity(rutinaRepository.save(existing));
     }
 

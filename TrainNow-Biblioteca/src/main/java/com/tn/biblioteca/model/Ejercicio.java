@@ -46,6 +46,10 @@ public class Ejercicio {
     /** Equipamiento necesario. */
     private String equipment;
 
+    /** Formas alternativas de hacerlo (ej. "Mancuernas, Barra, Máquina"), separadas por coma. */
+    @Column(columnDefinition = "TEXT")
+    private String alternatives;
+
     /** Pasos de ejecución, separados por "|". */
     @Column(columnDefinition = "TEXT")
     private String instructions;
