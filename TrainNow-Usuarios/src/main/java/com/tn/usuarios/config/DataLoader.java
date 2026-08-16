@@ -7,6 +7,7 @@ import com.tn.usuarios.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -16,11 +17,13 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -100,7 +103,7 @@ public class DataLoader implements CommandLineRunner {
                     .email("entrenador@trainingnow.com")
                     .password(passwordEncoder.encode("entrenador123"))
                     .specializations("Fuerza,Hipertrofia")
-                    .bio("Entrenador certificado con foco en fuerza e hipertrofia. Te ayudo a progresar con rutinas simples y sostenibles.")
+                    .bio(BIO_CARLOS)
                     .build());
 
             userRepository.save(User.builder()
@@ -115,23 +118,32 @@ public class DataLoader implements CommandLineRunner {
         crearUsuariosDeMuestra();
         completarDatosDemograficos();
         crearRelacionesEntrenadorCliente();
+        completarBiosEntrenadores();
+        asignarFotosRealesEntrenadores();
         repararFotosDePerfil();
     }
 
     /**
-     * @Column(columnDefinition = "TEXT") en User.profilePhotoUrl no basta: con
+     * @Column(columnDefinition = "TEXT") en User.profilePhotoUrl/promoImageUrl no basta: con
      * spring.jpa.hibernate.ddl-auto=update, Hibernate crea columnas nuevas pero NO altera el
      * tipo de una columna que ya existía como VARCHAR(255) (limitación conocida del modo
-     * "update"). Si esta columna ya quedó creada como VARCHAR(255) en una ejecución anterior,
-     * cualquier avatar/foto en base64 la revienta con "Data too long". Se fuerza aquí el ALTER
-     * TABLE de forma idempotente y segura (no falla si la columna ya es TEXT).
+     * "update"). Si alguna de estas columnas quedó creada como VARCHAR(255) en una ejecución
+     * anterior, cualquier avatar/foto en base64 la revienta con "Data too long".
+     *
+     * TEXT de MySQL además tiene un límite propio de 65 535 bytes: una foto real comprimida
+     * (no un avatar de iniciales chico) en base64 con el prefijo "data:image/jpeg;base64,"
+     * fácilmente supera eso (una foto de ~100 KB queda en ~140 000 caracteres). Por eso se usa
+     * MEDIUMTEXT (hasta 16 MB), no TEXT. Se fuerza aquí el ALTER TABLE de forma idempotente y
+     * segura (no falla si la columna ya es MEDIUMTEXT).
      */
     private void asegurarColumnaFotoAmplia() {
-        try {
-            jdbcTemplate.execute("ALTER TABLE users MODIFY COLUMN profile_photo_url TEXT");
-            log.info("Columna profile_photo_url verificada/ampliada a TEXT");
-        } catch (Exception e) {
-            log.warn("No se pudo ampliar la columna profile_photo_url a TEXT: {}", e.getMessage());
+        for (String columna : new String[]{"profile_photo_url", "promo_image_url"}) {
+            try {
+                jdbcTemplate.execute("ALTER TABLE users MODIFY COLUMN " + columna + " MEDIUMTEXT");
+                log.info("Columna {} verificada/ampliada a MEDIUMTEXT", columna);
+            } catch (Exception e) {
+                log.warn("No se pudo ampliar la columna {} a MEDIUMTEXT: {}", columna, e.getMessage());
+            }
         }
     }
 
@@ -216,7 +228,7 @@ public class DataLoader implements CommandLineRunner {
                 .phone("+56955667788")
                 .password(passwordEncoder.encode("demo123"))
                 .specializations("Yoga,Movilidad,Rehabilitación")
-                .bio("Especialista en movilidad y rehabilitación de lesiones. Clases de yoga para complementar tu entrenamiento de fuerza.")
+                .bio(BIO_VALENTINA)
                 .build());
 
         crearSiNoExiste(User.builder()
@@ -227,7 +239,7 @@ public class DataLoader implements CommandLineRunner {
                 .phone("+56966778899")
                 .password(passwordEncoder.encode("demo123"))
                 .specializations("Crossfit,Acondicionamiento Físico,Pérdida de grasa")
-                .bio("Entreno gente común que quiere sentirse mejor: fuerza funcional, resistencia y hábitos que se mantienen en el tiempo.")
+                .bio(BIO_RODRIGO)
                 .build());
 
         crearSiNoExiste(User.builder()
@@ -316,6 +328,118 @@ public class DataLoader implements CommandLineRunner {
                 .atStartOfDay(ZoneId.of("America/Santiago"))
                 .toInstant()
                 .toEpochMilli();
+    }
+
+    /**
+     * Fotos reales (generadas con IA) de los 3 entrenadores de muestra: foto de perfil
+     * (retrato cuadrado, se ve en círculo en toda la app) y foto de la publicación del Foro
+     * (imagen horizontal tipo anuncio, ver {@code promoImageUrl}). Los archivos están en
+     * resources/avatares/, ya comprimidos (máx. 800px de lado, JPEG, mismo criterio que
+     * ImageCompressor.kt en la app). Se cargan una sola vez: si el entrenador ya tiene su
+     * propia foto/publicación subida desde la app, no se pisa.
+     */
+    /** Bios completas (inventadas para la demo: años de experiencia + dónde se titularon),
+     *  que se muestran en la vista completa de la publicación del Foro. Las bios cortas
+     *  originales del seed no tenían nada de esto. */
+    private static final String BIO_CARLOS =
+            "Entrenador certificado con más de 10 años de experiencia en fuerza e hipertrofia. "
+            + "Se tituló en Educación Física en la Universidad de Chile y se especializó en "
+            + "Preparación Física en el Instituto Nacional del Deporte. Te ayudo a progresar con "
+            + "rutinas simples, medibles y sostenibles en el tiempo.";
+    private static final String BIO_VALENTINA =
+            "Kinesióloga y profesora de yoga con 7 años de experiencia en movilidad y "
+            + "rehabilitación de lesiones deportivas. Se tituló en la Universidad Andrés Bello y "
+            + "se certificó como instructora de yoga en Pilates Institute Chile. Combina ejercicios "
+            + "terapéuticos con clases de yoga para complementar tu entrenamiento de fuerza.";
+    private static final String BIO_RODRIGO =
+            "Entrenador con 9 años de experiencia en Crossfit y acondicionamiento físico. Se "
+            + "tituló como Preparador Físico en el instituto IPP Chile y cuenta con certificación "
+            + "Crossfit Level 2. Entreno gente común que quiere sentirse mejor: fuerza funcional, "
+            + "resistencia y hábitos que se mantienen en el tiempo.";
+
+    /** Bios cortas originales del seed, para detectar cuentas que quedaron con la versión vieja
+     *  (sin años de experiencia ni titulación) y así completarlas sin pisar una bio que el
+     *  entrenador ya haya editado a mano desde la app. */
+    private static final Map<String, String> BIO_ANTIGUA_POR_EMAIL = Map.of(
+            "entrenador@trainingnow.com", "Entrenador certificado con foco en fuerza e hipertrofia. Te ayudo a progresar con rutinas simples y sostenibles.",
+            "valentina.soto@trainingnow.com", "Especialista en movilidad y rehabilitación de lesiones. Clases de yoga para complementar tu entrenamiento de fuerza.",
+            "rodrigo.fuentes@trainingnow.com", "Entreno gente común que quiere sentirse mejor: fuerza funcional, resistencia y hábitos que se mantienen en el tiempo."
+    );
+
+    private static final Map<String, String> BIO_NUEVA_POR_EMAIL = Map.of(
+            "entrenador@trainingnow.com", BIO_CARLOS,
+            "valentina.soto@trainingnow.com", BIO_VALENTINA,
+            "rodrigo.fuentes@trainingnow.com", BIO_RODRIGO
+    );
+
+    /**
+     * Completa la bio de los 3 entrenadores de muestra con datos completos (años de experiencia,
+     * dónde se titularon) para que la vista completa de su publicación en el Foro no se vea a
+     * medio terminar. Solo reemplaza si la bio está vacía o todavía es la versión corta original
+     * del seed; si el entrenador ya la editó desde la app, no se toca.
+     */
+    private void completarBiosEntrenadores() {
+        BIO_NUEVA_POR_EMAIL.forEach((email, bioNueva) -> {
+            userRepository.findByEmailIgnoreCase(email).ifPresent(u -> {
+                String bioActual = u.getBio();
+                boolean esPlaceholder = bioActual == null || bioActual.isBlank()
+                        || bioActual.equals(BIO_ANTIGUA_POR_EMAIL.get(email));
+                if (esPlaceholder && !bioNueva.equals(bioActual)) {
+                    u.setBio(bioNueva);
+                    userRepository.save(u);
+                    log.info("Bio completa asignada a {}", email);
+                }
+            });
+        });
+    }
+
+    private static final Map<String, String[]> FOTOS_REALES_ENTRENADORES = Map.of(
+            "entrenador@trainingnow.com", new String[]{"carlos_perfil.jpg", "carlos_foro.jpg"},
+            "valentina.soto@trainingnow.com", new String[]{"valentina_perfil.jpg", "valentina_foro.jpg"},
+            "rodrigo.fuentes@trainingnow.com", new String[]{"rodrigo_perfil.jpg", "rodrigo_foro.jpg"}
+    );
+
+    private void asignarFotosRealesEntrenadores() {
+        FOTOS_REALES_ENTRENADORES.forEach((email, archivos) -> {
+            userRepository.findByEmailIgnoreCase(email).ifPresent(u -> {
+                boolean cambio = false;
+                // "Vacío" O sigue siendo el avatar de iniciales autogenerado (repararFotosDePerfil
+                // ya le había puesto uno a estas cuentas demo antes de tener foto real). Ese avatar
+                // se guarda como PNG; una foto real subida por la app siempre es JPEG. Si ya es
+                // JPEG, es porque el entrenador subió su propia foto desde la app: no se pisa.
+                boolean esPlaceholder = u.getProfilePhotoUrl() == null || u.getProfilePhotoUrl().isBlank()
+                        || u.getProfilePhotoUrl().startsWith("data:image/png");
+                if (esPlaceholder) {
+                    String dataUri = cargarImagenComoDataUri("avatares/" + archivos[0]);
+                    if (dataUri != null) {
+                        u.setProfilePhotoUrl(dataUri);
+                        cambio = true;
+                    }
+                }
+                if (u.getPromoImageUrl() == null || u.getPromoImageUrl().isBlank()) {
+                    String dataUri = cargarImagenComoDataUri("avatares/" + archivos[1]);
+                    if (dataUri != null) {
+                        u.setPromoImageUrl(dataUri);
+                        cambio = true;
+                    }
+                }
+                if (cambio) {
+                    userRepository.save(u);
+                    log.info("Foto real asignada a {}", email);
+                }
+            });
+        });
+    }
+
+    /** Lee un archivo JPEG del classpath (resources/) y lo devuelve como data URI base64. */
+    private String cargarImagenComoDataUri(String rutaClasspath) {
+        try (InputStream in = new ClassPathResource(rutaClasspath).getInputStream()) {
+            byte[] bytes = in.readAllBytes();
+            return "data:image/jpeg;base64," + Base64.getEncoder().encodeToString(bytes);
+        } catch (IOException e) {
+            log.warn("No se pudo cargar la imagen {}: {}", rutaClasspath, e.getMessage());
+            return null;
+        }
     }
 
     /**

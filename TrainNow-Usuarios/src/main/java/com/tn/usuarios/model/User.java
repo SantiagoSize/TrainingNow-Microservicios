@@ -44,8 +44,9 @@ public class User {
     @NotBlank(message = "La contraseña es obligatoria")
     private String password;
 
-    /** URL pública o data URI comprimido (JPEG/PNG base64, máx ~80 KB). */
-    @Column(columnDefinition = "TEXT")
+    /** URL pública o data URI comprimido (JPEG/PNG base64, máx ~80 KB). MEDIUMTEXT porque
+     *  TEXT de MySQL solo llega a 65 535 bytes y una foto real comprimida en base64 ya lo supera. */
+    @Column(columnDefinition = "MEDIUMTEXT")
     private String profilePhotoUrl;
 
     /** Fecha de nacimiento en epoch millis (contrato de la app). */
@@ -65,7 +66,7 @@ public class User {
 
     /** Imagen promocional (distinta de la foto de perfil) que el entrenador muestra
      *  en su tarjeta pública dentro de "Mis chats" de los usuarios. Data URI o URL. */
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "MEDIUMTEXT")
     private String promoImageUrl;
 
     // ===== Sanciones (admin) =====

@@ -189,6 +189,9 @@ public class UserService {
         if (ROLE_ADMIN.equals(target.getRole())) {
             throw new ForbiddenOperationException("No se puede sancionar a otro administrador");
         }
+        if (reason == null || reason.isBlank()) {
+            throw new IllegalArgumentException("El motivo del baneo es obligatorio");
+        }
         target.setIsBanned(true);
         target.setBanReason(reason);
         return UserDto.fromEntity(userRepository.save(target));
@@ -208,6 +211,9 @@ public class UserService {
         }
         if (untilMillis == null || untilMillis <= System.currentTimeMillis()) {
             throw new IllegalArgumentException("La fecha de fin de suspensión debe ser futura");
+        }
+        if (reason == null || reason.isBlank()) {
+            throw new IllegalArgumentException("El motivo de la suspensión es obligatorio");
         }
         target.setSuspendedUntil(untilMillis);
         target.setSuspendReason(reason);
@@ -259,9 +265,7 @@ public class UserService {
         if (q == null || q.isBlank()) {
             return userRepository.findByRole(role).stream().map(UserDto::fromEntity).toList();
         }
-        return userRepository
-                .findByRoleAndNameContainingIgnoreCaseOrRoleAndLastNameContainingIgnoreCaseOrRoleAndEmailContainingIgnoreCase(
-                        role, q, role, q, role, q)
+        return userRepository.searchByRoleAndText(role, q.trim())
                 .stream().map(UserDto::fromEntity).toList();
     }
 
