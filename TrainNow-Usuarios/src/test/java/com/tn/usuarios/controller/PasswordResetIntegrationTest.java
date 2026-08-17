@@ -23,49 +23,61 @@ class PasswordResetIntegrationTest {
 
     @Test
     void flujoCompleto_requestVerifyConfirm_yLoginConNuevaPassword() throws Exception {
-        // 1. Solicitar código (usuario seed usuario@gmail.com)
+        // 0. Usuario propio y desechable: la cuenta seed "usuario@gmail.com" es compartida
+        // con otras clases de test (mismo contexto Spring/H2) y no debe mutarse acá, o
+        // rompe logins que otras clases esperan hacer con la contraseña original.
+        String email = "resetflow@test.tn";
+        mockMvc.perform(post("/api/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"role": "USER", "name": "Reset", "lastName": "Flow",
+                                 "email": "%s", "phone": "+56911112222", "password": "vieja1234"}
+                                """.formatted(email)))
+                .andExpect(status().isCreated());
+
+        // 1. Solicitar código
         mockMvc.perform(post("/api/users/password-reset/request")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"email": "usuario@gmail.com"}
-                                """))
+                                {"email": "%s"}
+                                """.formatted(email)))
                 .andExpect(status().isOk());
 
         String code = codeRepository
-                .findTopByEmailIgnoreCaseAndUsedFalseOrderByCreatedAtDesc("usuario@gmail.com")
+                .findTopByEmailIgnoreCaseAndUsedFalseOrderByCreatedAtDesc(email)
                 .orElseThrow().getCode();
 
         // 2. Verificar código
         mockMvc.perform(post("/api/users/password-reset/verify")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"email": "usuario@gmail.com", "code": "%s"}
-                                """.formatted(code)))
+                                {"email": "%s", "code": "%s"}
+                                """.formatted(email, code)))
                 .andExpect(status().isOk());
 
         // 3. Confirmar nueva contraseña
         mockMvc.perform(post("/api/users/password-reset/confirm")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"email": "usuario@gmail.com", "code": "%s", "newPassword": "nueva1234"}
-                                """.formatted(code)))
+                                {"email": "%s", "code": "%s", "newPassword": "nueva1234"}
+                                """.formatted(email, code)))
                 .andExpect(status().isOk());
 
         // 4. Login con la nueva contraseña
         mockMvc.perform(post("/api/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"email": "usuario@gmail.com", "password": "nueva1234"}
-                                """))
+                                {"email": "%s", "password": "nueva1234"}
+                                """.formatted(email)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.email").value("usuario@gmail.com"));
+                .andExpect(jsonPath("$.email").value(email));
 
         // 5. El código ya no puede reutilizarse
         mockMvc.perform(post("/api/users/password-reset/confirm")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"email": "usuario@gmail.com", "code": "%s", "newPassword": "otra1234"}
-                                """.formatted(code)))
+                                {"email": "%s", "code": "%s", "newPassword": "otra1234"}
+                                """.formatted(email, code)))
                 .andExpect(status().isBadRequest());
     }
 

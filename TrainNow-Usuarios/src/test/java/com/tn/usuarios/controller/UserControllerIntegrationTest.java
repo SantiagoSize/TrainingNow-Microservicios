@@ -290,4 +290,54 @@ class UserControllerIntegrationTest {
                                 """))
                 .andExpect(status().isForbidden());
     }
+
+    @Test
+    void banear_sinMotivo_400() throws Exception {
+        String token = adminToken();
+        mockMvc.perform(post("/api/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(nuevoUsuarioJson("sinmotivo.ban@test.tn")))
+                .andExpect(status().isCreated());
+        long id = idDeUsuario("sinmotivo.ban@test.tn", "test1234");
+
+        mockMvc.perform(patch("/api/users/" + id + "/ban")
+                        .header("Authorization", token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"reason": ""}
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value(org.hamcrest.Matchers.containsString("obligatorio")));
+    }
+
+    @Test
+    void suspender_sinMotivo_400() throws Exception {
+        String token = adminToken();
+        mockMvc.perform(post("/api/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(nuevoUsuarioJson("sinmotivo.susp@test.tn")))
+                .andExpect(status().isCreated());
+        long id = idDeUsuario("sinmotivo.susp@test.tn", "test1234");
+        long hastaManana = System.currentTimeMillis() + 24 * 60 * 60 * 1000L;
+
+        mockMvc.perform(patch("/api/users/" + id + "/suspend")
+                        .header("Authorization", token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"untilMillis": %d, "reason": ""}
+                                """.formatted(hastaManana)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value(org.hamcrest.Matchers.containsString("obligatorio")));
+    }
+
+    /** Login con [email]/[password] y devuelve el id del usuario autenticado. */
+    private long idDeUsuario(String email, String password) throws Exception {
+        String resp = mockMvc.perform(post("/api/users/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"email": "%s", "password": "%s"}
+                                """.formatted(email, password)))
+                .andReturn().getResponse().getContentAsString();
+        return ((Number) com.jayway.jsonpath.JsonPath.read(resp, "$.id")).longValue();
+    }
 }

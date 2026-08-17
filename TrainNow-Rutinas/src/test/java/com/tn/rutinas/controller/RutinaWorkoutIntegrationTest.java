@@ -22,9 +22,11 @@ class RutinaWorkoutIntegrationTest {
 
     @Test
     void rutinasPublicas_devuelveSeed() throws Exception {
+        // El seed de rutinas públicas es Básquetbol/Hipertrofia/Pilates (ver DataLoader);
+        // "Full Body Principiante" era el seed anterior a la tarea #29.
         mockMvc.perform(get("/api/routines/public"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].name").value("Full Body Principiante"));
+                .andExpect(jsonPath("$[0].name").value("Pretemporada de Básquetbol"));
     }
 
     @Test
