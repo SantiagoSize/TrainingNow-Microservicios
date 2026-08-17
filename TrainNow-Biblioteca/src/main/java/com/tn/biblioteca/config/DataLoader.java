@@ -29,14 +29,35 @@ public class DataLoader implements CommandLineRunner {
     private final EjercicioRepository repository;
     private final JdbcTemplate jdbcTemplate;
 
-    /** Video único asignado a los 15 ejercicios sembrados, a pedido de Santiago para
-     *  simplificar la demo en vez de buscar un video específico por ejercicio. */
-    private static final String VIDEO_URL_DEMO = "https://youtu.be/DDsbiDeyJNA";
+    /** Valores previos de video "genérico" (uno solo para los 15 ejercicios) que hubo en
+     *  versiones anteriores del seed: si un ejercicio quedó con alguno de estos, se migra al
+     *  tutorial específico de VIDEOS_EJERCICIOS en vez de dejarlo desactualizado (mismo
+     *  criterio que BIO_ANTIGUA_POR_EMAIL en TrainNow-Usuarios). */
+    private static final List<String> VIDEOS_GENERICOS_ANTERIORES = List.of(
+            "https://www.youtube.com/watch?v=iA7kjqfMzS4",
+            "https://youtu.be/DDsbiDeyJNA"
+    );
 
-    /** Valor anterior de VIDEO_URL_DEMO: si algún ejercicio ya lo tiene asignado (de un
-     *  arranque previo), completarVideoUrlsFaltantes() lo migra al nuevo en vez de dejarlo
-     *  desactualizado (mismo criterio que BIO_ANTIGUA_POR_EMAIL en TrainNow-Usuarios). */
-    private static final String VIDEO_URL_DEMO_ANTERIOR = "https://www.youtube.com/watch?v=iA7kjqfMzS4";
+    /** Un tutorial real de YouTube por ejercicio (técnica de ejecución), verificados con la
+     *  API oEmbed de YouTube antes de asignarlos. Reemplaza el video único genérico que se
+     *  usó antes: ese era solo el demo de la app, no explicaba cómo hacer el ejercicio. */
+    private static final Map<String, String> VIDEOS_EJERCICIOS = Map.ofEntries(
+            Map.entry("Press de banca", "https://www.youtube.com/watch?v=7aQY3u0Dk-Q"),
+            Map.entry("Press inclinado con mancuernas", "https://www.youtube.com/watch?v=9fy0A5xWsgk"),
+            Map.entry("Aperturas con mancuernas", "https://www.youtube.com/watch?v=OrlXQdNwNwM"),
+            Map.entry("Dominadas", "https://www.youtube.com/watch?v=ICQoykUbkWk"),
+            Map.entry("Remo con barra", "https://www.youtube.com/watch?v=5Gg2OPlCkuE"),
+            Map.entry("Jalón al pecho", "https://www.youtube.com/watch?v=eSlKErmf5WU"),
+            Map.entry("Sentadilla", "https://www.youtube.com/watch?v=9D7zI27gFHM"),
+            Map.entry("Prensa de piernas", "https://www.youtube.com/watch?v=T-koHmW1HSs"),
+            Map.entry("Peso muerto rumano", "https://www.youtube.com/watch?v=ZiO69NlLlYo"),
+            Map.entry("Press militar", "https://www.youtube.com/watch?v=OHxSwnkSxB8"),
+            Map.entry("Elevaciones laterales", "https://www.youtube.com/watch?v=aVa9ce3SlSA"),
+            Map.entry("Curl con barra", "https://www.youtube.com/watch?v=uDLZNOqv3EA"),
+            Map.entry("Fondos en paralelas", "https://www.youtube.com/watch?v=OgjaUueRiII"),
+            Map.entry("Plancha", "https://www.youtube.com/watch?v=nmX0DysvqcQ"),
+            Map.entry("Crunch abdominal", "https://www.youtube.com/watch?v=hl9Yu7UZqHU")
+    );
 
     /** Fotos reales (comprimidas a 800px, JPEG) que Santiago fue mandando ejercicio por
      *  ejercicio, en resources/ejercicios/. Se completan por nombre según van llegando;
