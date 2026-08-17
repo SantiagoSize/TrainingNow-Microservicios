@@ -91,7 +91,7 @@ public class DataLoader implements CommandLineRunner {
             Ejercicio.builder()
                 .name("Press de banca")
                 .category("Pectorales")
-                .videoUrl("https://youtu.be/DDsbiDeyJNA")
+                .videoUrl("https://www.youtube.com/watch?v=7aQY3u0Dk-Q")
                 .description("Ejercicio básico de empuje horizontal. Es el principal constructor de fuerza y masa para el pecho.")
                 .muscles("Pectoral mayor, Tríceps, Deltoides anterior")
                 .difficulty("INTERMEDIO")
@@ -116,7 +116,7 @@ public class DataLoader implements CommandLineRunner {
             Ejercicio.builder()
                 .name("Press inclinado con mancuernas")
                 .category("Pectorales")
-                .videoUrl("https://youtu.be/DDsbiDeyJNA")
+                .videoUrl("https://www.youtube.com/watch?v=9fy0A5xWsgk")
                 .description("Variante en banco inclinado que enfatiza la porción superior (clavicular) del pectoral.")
                 .muscles("Pectoral superior, Deltoides anterior, Tríceps")
                 .difficulty("INTERMEDIO")
@@ -138,7 +138,7 @@ public class DataLoader implements CommandLineRunner {
             Ejercicio.builder()
                 .name("Aperturas con mancuernas")
                 .category("Pectorales")
-                .videoUrl("https://youtu.be/DDsbiDeyJNA")
+                .videoUrl("https://www.youtube.com/watch?v=OrlXQdNwNwM")
                 .description("Ejercicio de aislamiento que estira y contrae el pectoral en su función de aducción.")
                 .muscles("Pectoral mayor, Deltoides anterior")
                 .difficulty("PRINCIPIANTE")
@@ -160,7 +160,7 @@ public class DataLoader implements CommandLineRunner {
             Ejercicio.builder()
                 .name("Dominadas")
                 .category("Espalda")
-                .videoUrl("https://youtu.be/DDsbiDeyJNA")
+                .videoUrl("https://www.youtube.com/watch?v=ICQoykUbkWk")
                 .description("Ejercicio de tracción vertical con peso corporal. El mejor indicador de fuerza relativa de espalda.")
                 .muscles("Dorsal ancho, Bíceps, Romboides, Trapecio medio")
                 .difficulty("AVANZADO")
@@ -182,7 +182,7 @@ public class DataLoader implements CommandLineRunner {
             Ejercicio.builder()
                 .name("Remo con barra")
                 .category("Espalda")
-                .videoUrl("https://youtu.be/DDsbiDeyJNA")
+                .videoUrl("https://www.youtube.com/watch?v=5Gg2OPlCkuE")
                 .description("Tracción horizontal que desarrolla grosor en la espalda media y fuerza de agarre.")
                 .muscles("Dorsal ancho, Romboides, Trapecio, Bíceps, Erectores espinales")
                 .difficulty("INTERMEDIO")
@@ -204,7 +204,7 @@ public class DataLoader implements CommandLineRunner {
             Ejercicio.builder()
                 .name("Jalón al pecho")
                 .category("Espalda")
-                .videoUrl("https://youtu.be/DDsbiDeyJNA")
+                .videoUrl("https://www.youtube.com/watch?v=eSlKErmf5WU")
                 .description("Alternativa en polea a las dominadas; permite regular la carga para trabajar la anchura dorsal.")
                 .muscles("Dorsal ancho, Bíceps, Trapecio inferior")
                 .difficulty("PRINCIPIANTE")
@@ -227,7 +227,7 @@ public class DataLoader implements CommandLineRunner {
             Ejercicio.builder()
                 .name("Sentadilla")
                 .category("Piernas")
-                .videoUrl("https://youtu.be/DDsbiDeyJNA")
+                .videoUrl("https://www.youtube.com/watch?v=9D7zI27gFHM")
                 .description("El ejercicio rey del tren inferior: desarrolla fuerza global y estabilidad del core.")
                 .muscles("Cuádriceps, Glúteos, Isquiotibiales, Core, Erectores espinales")
                 .difficulty("INTERMEDIO")
@@ -251,7 +251,7 @@ public class DataLoader implements CommandLineRunner {
             Ejercicio.builder()
                 .name("Prensa de piernas")
                 .category("Piernas")
-                .videoUrl("https://youtu.be/DDsbiDeyJNA")
+                .videoUrl("https://www.youtube.com/watch?v=T-koHmW1HSs")
                 .description("Empuje de piernas guiado por máquina; permite cargar el cuádriceps con menor exigencia técnica.")
                 .muscles("Cuádriceps, Glúteos, Isquiotibiales")
                 .difficulty("PRINCIPIANTE")
@@ -273,7 +273,7 @@ public class DataLoader implements CommandLineRunner {
             Ejercicio.builder()
                 .name("Peso muerto rumano")
                 .category("Piernas")
-                .videoUrl("https://youtu.be/DDsbiDeyJNA")
+                .videoUrl("https://www.youtube.com/watch?v=ZiO69NlLlYo")
                 .description("Bisagra de cadera centrada en isquiotibiales y glúteo; clave para la salud de la cadena posterior.")
                 .muscles("Isquiotibiales, Glúteos, Erectores espinales")
                 .difficulty("INTERMEDIO")
@@ -296,7 +296,7 @@ public class DataLoader implements CommandLineRunner {
             Ejercicio.builder()
                 .name("Press militar")
                 .category("Hombros")
-                .videoUrl("https://youtu.be/DDsbiDeyJNA")
+                .videoUrl("https://www.youtube.com/watch?v=OHxSwnkSxB8")
                 .description("Empuje vertical de pie; construye fuerza de hombro y estabilidad de todo el tronco.")
                 .muscles("Deltoides anterior y medio, Tríceps, Core")
                 .difficulty("INTERMEDIO")
@@ -319,7 +319,7 @@ public class DataLoader implements CommandLineRunner {
             Ejercicio.builder()
                 .name("Elevaciones laterales")
                 .category("Hombros")
-                .videoUrl("https://youtu.be/DDsbiDeyJNA")
+                .videoUrl("https://www.youtube.com/watch?v=aVa9ce3SlSA")
                 .description("Aislamiento del deltoides medio; responsable directo de la anchura visual del hombro.")
                 .muscles("Deltoides medio, Trapecio superior")
                 .difficulty("PRINCIPIANTE")
@@ -342,7 +342,7 @@ public class DataLoader implements CommandLineRunner {
             Ejercicio.builder()
                 .name("Curl con barra")
                 .category("Bíceps")
-                .videoUrl("https://youtu.be/DDsbiDeyJNA")
+                .videoUrl("https://www.youtube.com/watch?v=uDLZNOqv3EA")
                 .description("Ejercicio base de bíceps; permite cargar más que las variantes unilaterales.")
                 .muscles("Bíceps braquial, Braquial anterior, Antebrazo")
                 .difficulty("PRINCIPIANTE")
@@ -364,7 +364,7 @@ public class DataLoader implements CommandLineRunner {
             Ejercicio.builder()
                 .name("Fondos en paralelas")
                 .category("Tríceps")
-                .videoUrl("https://youtu.be/DDsbiDeyJNA")
+                .videoUrl("https://www.youtube.com/watch?v=OgjaUueRiII")
                 .description("Empuje vertical con peso corporal; excelente para tríceps y pecho inferior.")
                 .muscles("Tríceps, Pectoral inferior, Deltoides anterior")
                 .difficulty("INTERMEDIO")
@@ -387,7 +387,7 @@ public class DataLoader implements CommandLineRunner {
             Ejercicio.builder()
                 .name("Plancha")
                 .category("Core")
-                .videoUrl("https://youtu.be/DDsbiDeyJNA")
+                .videoUrl("https://www.youtube.com/watch?v=nmX0DysvqcQ")
                 .description("Ejercicio isométrico que enseña al core a resistir la extensión de la columna.")
                 .muscles("Transverso abdominal, Recto abdominal, Oblicuos, Glúteos")
                 .difficulty("PRINCIPIANTE")
@@ -409,7 +409,7 @@ public class DataLoader implements CommandLineRunner {
             Ejercicio.builder()
                 .name("Crunch abdominal")
                 .category("Core")
-                .videoUrl("https://youtu.be/DDsbiDeyJNA")
+                .videoUrl("https://www.youtube.com/watch?v=hl9Yu7UZqHU")
                 .description("Flexión corta de columna que aísla el recto abdominal en su rango superior.")
                 .muscles("Recto abdominal, Oblicuos")
                 .difficulty("PRINCIPIANTE")
@@ -435,21 +435,24 @@ public class DataLoader implements CommandLineRunner {
 
     /**
      * Completa el videoUrl de ejercicios ya sembrados en una ejecución anterior (antes de
-     * agregar este campo al seed) y que por lo tanto quedaron con videoUrl en null, y migra
-     * los que se hayan quedado con VIDEO_URL_DEMO_ANTERIOR al video nuevo. Si el ejercicio
-     * ya tiene su propio video distinto de ambos (asignado a mano desde el panel de
-     * administración), no se pisa. Se ejecuta en cada arranque, igual que los métodos
+     * agregar este campo al seed, o cuando todavía usaba un único video genérico) con el
+     * tutorial específico de VIDEOS_EJERCICIOS. Si el ejercicio ya tiene su propio video
+     * (asignado a mano desde el panel de administración, distinto de los genéricos
+     * anteriores), no se pisa. Se ejecuta en cada arranque, igual que los métodos
      * "reparar*" de TrainNow-Usuarios.
      */
     private void completarVideoUrlsFaltantes() {
-        var sinVideo = repository.findAll().stream()
+        var porNombre = repository.findAll().stream()
                 .filter(e -> Boolean.TRUE.equals(e.getIsSystemDefault()))
                 .filter(e -> e.getVideoUrl() == null || e.getVideoUrl().isBlank()
-                        || VIDEO_URL_DEMO_ANTERIOR.equals(e.getVideoUrl()))
+                        || VIDEOS_GENERICOS_ANTERIORES.contains(e.getVideoUrl()))
                 .toList();
-        if (sinVideo.isEmpty()) return;
-        sinVideo.forEach(e -> e.setVideoUrl(VIDEO_URL_DEMO));
-        repository.saveAll(sinVideo);
+        if (porNombre.isEmpty()) return;
+        var actualizados = porNombre.stream()
+                .filter(e -> VIDEOS_EJERCICIOS.containsKey(e.getName()))
+                .peek(e -> e.setVideoUrl(VIDEOS_EJERCICIOS.get(e.getName())))
+                .toList();
+        if (!actualizados.isEmpty()) repository.saveAll(actualizados);
     }
 
     /**
