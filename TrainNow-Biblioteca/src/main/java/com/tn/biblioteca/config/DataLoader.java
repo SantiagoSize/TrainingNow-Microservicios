@@ -3,10 +3,18 @@ package com.tn.biblioteca.config;
 import com.tn.biblioteca.model.Ejercicio;
 import com.tn.biblioteca.repository.EjercicioRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Base64;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Seed de la biblioteca: 15 ejercicios con información didáctica completa
@@ -15,20 +23,50 @@ import java.util.List;
  */
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class DataLoader implements CommandLineRunner {
 
     private final EjercicioRepository repository;
+    private final JdbcTemplate jdbcTemplate;
+
+    /** Video único (tutorial general de técnica de gimnasio) asignado a los 15 ejercicios
+     *  sembrados, a pedido de Santiago para simplificar la demo en vez de buscar un video
+     *  específico por ejercicio. */
+    private static final String VIDEO_URL_DEMO = "https://www.youtube.com/watch?v=iA7kjqfMzS4";
+
+    /** Fotos reales (comprimidas a 800px, JPEG) que Santiago fue mandando ejercicio por
+     *  ejercicio, en resources/ejercicios/. Se completan por nombre según van llegando;
+     *  los ejercicios sin foto todavía quedan con imageUrl vacío hasta que se agreguen aquí. */
+    private static final Map<String, String> FOTOS_EJERCICIOS = Map.ofEntries(
+            Map.entry("Press de banca", "press_de_banca.jpg"),
+            Map.entry("Press inclinado con mancuernas", "press_inclinado_mancuernas.jpg"),
+            Map.entry("Aperturas con mancuernas", "aperturas_mancuernas.jpg"),
+            Map.entry("Dominadas", "dominadas.jpg"),
+            Map.entry("Remo con barra", "remo_con_barra.jpg"),
+            Map.entry("Jalón al pecho", "jalon_al_pecho.jpg"),
+            Map.entry("Sentadilla", "sentadilla.jpg"),
+            Map.entry("Prensa de piernas", "prensa_de_piernas.jpg"),
+            Map.entry("Peso muerto rumano", "peso_muerto_rumano.jpg"),
+            Map.entry("Press militar", "press_militar.jpg"),
+            Map.entry("Elevaciones laterales", "elevaciones_laterales.jpg"),
+            Map.entry("Curl con barra", "curl_con_barra.jpg"),
+            Map.entry("Fondos en paralelas", "fondos_en_paralelas.jpg"),
+            Map.entry("Plancha", "plancha.jpg"),
+            Map.entry("Crunch abdominal", "crunch_abdominal.jpg")
+    );
 
     @Override
     public void run(String... args) {
-        if (repository.count() > 0) return;
+        asegurarColumnaImagenAmplia();
+        boolean yaSembrado = repository.count() > 0;
 
-        repository.saveAll(List.of(
+        if (!yaSembrado) repository.saveAll(List.of(
 
             // ==================== PECTORALES ====================
             Ejercicio.builder()
                 .name("Press de banca")
                 .category("Pectorales")
+                .videoUrl("https://www.youtube.com/watch?v=iA7kjqfMzS4")
                 .description("Ejercicio básico de empuje horizontal. Es el principal constructor de fuerza y masa para el pecho.")
                 .muscles("Pectoral mayor, Tríceps, Deltoides anterior")
                 .difficulty("INTERMEDIO")
@@ -53,6 +91,7 @@ public class DataLoader implements CommandLineRunner {
             Ejercicio.builder()
                 .name("Press inclinado con mancuernas")
                 .category("Pectorales")
+                .videoUrl("https://www.youtube.com/watch?v=iA7kjqfMzS4")
                 .description("Variante en banco inclinado que enfatiza la porción superior (clavicular) del pectoral.")
                 .muscles("Pectoral superior, Deltoides anterior, Tríceps")
                 .difficulty("INTERMEDIO")
@@ -74,6 +113,7 @@ public class DataLoader implements CommandLineRunner {
             Ejercicio.builder()
                 .name("Aperturas con mancuernas")
                 .category("Pectorales")
+                .videoUrl("https://www.youtube.com/watch?v=iA7kjqfMzS4")
                 .description("Ejercicio de aislamiento que estira y contrae el pectoral en su función de aducción.")
                 .muscles("Pectoral mayor, Deltoides anterior")
                 .difficulty("PRINCIPIANTE")
@@ -95,6 +135,7 @@ public class DataLoader implements CommandLineRunner {
             Ejercicio.builder()
                 .name("Dominadas")
                 .category("Espalda")
+                .videoUrl("https://www.youtube.com/watch?v=iA7kjqfMzS4")
                 .description("Ejercicio de tracción vertical con peso corporal. El mejor indicador de fuerza relativa de espalda.")
                 .muscles("Dorsal ancho, Bíceps, Romboides, Trapecio medio")
                 .difficulty("AVANZADO")
@@ -116,6 +157,7 @@ public class DataLoader implements CommandLineRunner {
             Ejercicio.builder()
                 .name("Remo con barra")
                 .category("Espalda")
+                .videoUrl("https://www.youtube.com/watch?v=iA7kjqfMzS4")
                 .description("Tracción horizontal que desarrolla grosor en la espalda media y fuerza de agarre.")
                 .muscles("Dorsal ancho, Romboides, Trapecio, Bíceps, Erectores espinales")
                 .difficulty("INTERMEDIO")
@@ -137,6 +179,7 @@ public class DataLoader implements CommandLineRunner {
             Ejercicio.builder()
                 .name("Jalón al pecho")
                 .category("Espalda")
+                .videoUrl("https://www.youtube.com/watch?v=iA7kjqfMzS4")
                 .description("Alternativa en polea a las dominadas; permite regular la carga para trabajar la anchura dorsal.")
                 .muscles("Dorsal ancho, Bíceps, Trapecio inferior")
                 .difficulty("PRINCIPIANTE")
@@ -159,6 +202,7 @@ public class DataLoader implements CommandLineRunner {
             Ejercicio.builder()
                 .name("Sentadilla")
                 .category("Piernas")
+                .videoUrl("https://www.youtube.com/watch?v=iA7kjqfMzS4")
                 .description("El ejercicio rey del tren inferior: desarrolla fuerza global y estabilidad del core.")
                 .muscles("Cuádriceps, Glúteos, Isquiotibiales, Core, Erectores espinales")
                 .difficulty("INTERMEDIO")
@@ -182,6 +226,7 @@ public class DataLoader implements CommandLineRunner {
             Ejercicio.builder()
                 .name("Prensa de piernas")
                 .category("Piernas")
+                .videoUrl("https://www.youtube.com/watch?v=iA7kjqfMzS4")
                 .description("Empuje de piernas guiado por máquina; permite cargar el cuádriceps con menor exigencia técnica.")
                 .muscles("Cuádriceps, Glúteos, Isquiotibiales")
                 .difficulty("PRINCIPIANTE")
@@ -203,6 +248,7 @@ public class DataLoader implements CommandLineRunner {
             Ejercicio.builder()
                 .name("Peso muerto rumano")
                 .category("Piernas")
+                .videoUrl("https://www.youtube.com/watch?v=iA7kjqfMzS4")
                 .description("Bisagra de cadera centrada en isquiotibiales y glúteo; clave para la salud de la cadena posterior.")
                 .muscles("Isquiotibiales, Glúteos, Erectores espinales")
                 .difficulty("INTERMEDIO")
@@ -225,6 +271,7 @@ public class DataLoader implements CommandLineRunner {
             Ejercicio.builder()
                 .name("Press militar")
                 .category("Hombros")
+                .videoUrl("https://www.youtube.com/watch?v=iA7kjqfMzS4")
                 .description("Empuje vertical de pie; construye fuerza de hombro y estabilidad de todo el tronco.")
                 .muscles("Deltoides anterior y medio, Tríceps, Core")
                 .difficulty("INTERMEDIO")
@@ -247,6 +294,7 @@ public class DataLoader implements CommandLineRunner {
             Ejercicio.builder()
                 .name("Elevaciones laterales")
                 .category("Hombros")
+                .videoUrl("https://www.youtube.com/watch?v=iA7kjqfMzS4")
                 .description("Aislamiento del deltoides medio; responsable directo de la anchura visual del hombro.")
                 .muscles("Deltoides medio, Trapecio superior")
                 .difficulty("PRINCIPIANTE")
@@ -269,6 +317,7 @@ public class DataLoader implements CommandLineRunner {
             Ejercicio.builder()
                 .name("Curl con barra")
                 .category("Bíceps")
+                .videoUrl("https://www.youtube.com/watch?v=iA7kjqfMzS4")
                 .description("Ejercicio base de bíceps; permite cargar más que las variantes unilaterales.")
                 .muscles("Bíceps braquial, Braquial anterior, Antebrazo")
                 .difficulty("PRINCIPIANTE")
@@ -290,6 +339,7 @@ public class DataLoader implements CommandLineRunner {
             Ejercicio.builder()
                 .name("Fondos en paralelas")
                 .category("Tríceps")
+                .videoUrl("https://www.youtube.com/watch?v=iA7kjqfMzS4")
                 .description("Empuje vertical con peso corporal; excelente para tríceps y pecho inferior.")
                 .muscles("Tríceps, Pectoral inferior, Deltoides anterior")
                 .difficulty("INTERMEDIO")
@@ -312,6 +362,7 @@ public class DataLoader implements CommandLineRunner {
             Ejercicio.builder()
                 .name("Plancha")
                 .category("Core")
+                .videoUrl("https://www.youtube.com/watch?v=iA7kjqfMzS4")
                 .description("Ejercicio isométrico que enseña al core a resistir la extensión de la columna.")
                 .muscles("Transverso abdominal, Recto abdominal, Oblicuos, Glúteos")
                 .difficulty("PRINCIPIANTE")
@@ -333,6 +384,7 @@ public class DataLoader implements CommandLineRunner {
             Ejercicio.builder()
                 .name("Crunch abdominal")
                 .category("Core")
+                .videoUrl("https://www.youtube.com/watch?v=iA7kjqfMzS4")
                 .description("Flexión corta de columna que aísla el recto abdominal en su rango superior.")
                 .muscles("Recto abdominal, Oblicuos")
                 .difficulty("PRINCIPIANTE")
@@ -351,5 +403,74 @@ public class DataLoader implements CommandLineRunner {
                 .recommendedSets(3).recommendedReps("15-20").restSeconds(45)
                 .isSystemDefault(true).build()
         ));
+
+        completarVideoUrlsFaltantes();
+        asignarFotosEjercicios();
+    }
+
+    /**
+     * Completa el videoUrl de ejercicios ya sembrados en una ejecución anterior (antes de
+     * agregar este campo al seed) y que por lo tanto quedaron con videoUrl en null. Solo
+     * rellena lo que esté vacío: si el ejercicio ya tiene su propio video (asignado a mano
+     * desde el panel de administración), no se pisa. Se ejecuta en cada arranque, igual que
+     * los métodos "reparar*" de TrainNow-Usuarios.
+     */
+    private void completarVideoUrlsFaltantes() {
+        var sinVideo = repository.findAll().stream()
+                .filter(e -> Boolean.TRUE.equals(e.getIsSystemDefault()))
+                .filter(e -> e.getVideoUrl() == null || e.getVideoUrl().isBlank())
+                .toList();
+        if (sinVideo.isEmpty()) return;
+        sinVideo.forEach(e -> e.setVideoUrl(VIDEO_URL_DEMO));
+        repository.saveAll(sinVideo);
+    }
+
+    /**
+     * @Column(columnDefinition = "TEXT") no basta para una foto real comprimida (800px, JPEG)
+     * en base64: TEXT de MySQL solo llega a 65 535 bytes. Con ddl-auto=update, Hibernate no
+     * altera el tipo de una columna que ya existía como TEXT, así que se fuerza aquí el ALTER
+     * TABLE de forma idempotente (mismo criterio que asegurarColumnaFotoAmplia en
+     * TrainNow-Usuarios).
+     */
+    private void asegurarColumnaImagenAmplia() {
+        try {
+            jdbcTemplate.execute("ALTER TABLE exercises MODIFY COLUMN image_url MEDIUMTEXT");
+        } catch (Exception e) {
+            log.warn("No se pudo ampliar la columna image_url a MEDIUMTEXT: {}", e.getMessage());
+        }
+    }
+
+    /**
+     * Asigna las fotos reales que Santiago va mandando ejercicio por ejercicio (ver
+     * FOTOS_EJERCICIOS), cargadas desde resources/ejercicios/. Solo completa lo que esté
+     * vacío: si el ejercicio ya tiene imagen propia (subida desde el panel de administración),
+     * no se pisa. Se ejecuta en cada arranque, así que basta con agregar la entrada al mapa y
+     * el archivo en resources/ para que la próxima vez que corra el servicio quede asignada.
+     */
+    private void asignarFotosEjercicios() {
+        var porNombre = repository.findAll().stream()
+                .collect(Collectors.toMap(e -> e.getName().toLowerCase(), e -> e, (a, b) -> a));
+        FOTOS_EJERCICIOS.forEach((nombre, archivo) -> {
+            Ejercicio ejercicio = porNombre.get(nombre.toLowerCase());
+            if (ejercicio == null) return;
+            if (ejercicio.getImageUrl() != null && !ejercicio.getImageUrl().isBlank()) return;
+            String dataUri = cargarImagenComoDataUri("ejercicios/" + archivo);
+            if (dataUri != null) {
+                ejercicio.setImageUrl(dataUri);
+                repository.save(ejercicio);
+                log.info("Foto asignada a {}", nombre);
+            }
+        });
+    }
+
+    /** Lee un archivo JPEG del classpath (resources/) y lo devuelve como data URI base64. */
+    private String cargarImagenComoDataUri(String rutaClasspath) {
+        try (InputStream in = new ClassPathResource(rutaClasspath).getInputStream()) {
+            byte[] bytes = in.readAllBytes();
+            return "data:image/jpeg;base64," + Base64.getEncoder().encodeToString(bytes);
+        } catch (IOException e) {
+            log.warn("No se pudo cargar la imagen {}: {}", rutaClasspath, e.getMessage());
+            return null;
+        }
     }
 }

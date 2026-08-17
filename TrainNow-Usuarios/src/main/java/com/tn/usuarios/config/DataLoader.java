@@ -116,6 +116,7 @@ public class DataLoader implements CommandLineRunner {
         }
 
         crearUsuariosDeMuestra();
+        crearUsuariosSancionadosDePrueba();
         completarDatosDemograficos();
         crearRelacionesEntrenadorCliente();
         completarBiosEntrenadores();
@@ -249,6 +250,37 @@ public class DataLoader implements CommandLineRunner {
                 .email("francisca.torres@trainingnow.com")
                 .phone("+56911223344")
                 .password(passwordEncoder.encode("demo123"))
+                .build());
+    }
+
+    /**
+     * Dos cuentas de prueba ya sancionadas (fuera del roster oficial de 3 usuarios/3
+     * entrenadores/2 admins, igual que las cuentas que limpia limpiar_usuarios_prueba.bat),
+     * para poder mostrar el flujo de baneo/suspensión al profesor sin tener que aplicar la
+     * sanción a mano antes de cada demo. Se crean una sola vez (idempotente); la suspensión
+     * queda fijada a 7 días desde el primer arranque en el que se crean.
+     */
+    private void crearUsuariosSancionadosDePrueba() {
+        crearSiNoExiste(User.builder()
+                .role("USER")
+                .name("Usuario")
+                .lastName("Baneado (prueba)")
+                .email("baneado.demo@gmail.com")
+                .phone("+56900000001")
+                .password(passwordEncoder.encode("demo123"))
+                .isBanned(true)
+                .banReason("Cuenta de prueba: demuestra el bloqueo de login por baneo")
+                .build());
+
+        crearSiNoExiste(User.builder()
+                .role("USER")
+                .name("Usuario")
+                .lastName("Suspendido (prueba)")
+                .email("suspendido.demo@gmail.com")
+                .phone("+56900000002")
+                .password(passwordEncoder.encode("demo123"))
+                .suspendedUntil(System.currentTimeMillis() + 7L * 24 * 60 * 60 * 1000)
+                .suspendReason("Cuenta de prueba: demuestra el bloqueo de login por suspensión (7 días)")
                 .build());
     }
 

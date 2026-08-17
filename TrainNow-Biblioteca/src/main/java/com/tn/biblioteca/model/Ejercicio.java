@@ -32,8 +32,11 @@ public class Ejercicio {
 
     private String videoUrl;
 
-    /** Imagen del ejercicio: URL pública o data URI comprimido (JPEG base64, máx ~120 KB). */
-    @Column(columnDefinition = "TEXT")
+    /** Imagen del ejercicio: URL pública o data URI comprimido (JPEG base64, máx ~120 KB).
+     *  MEDIUMTEXT porque TEXT de MySQL solo llega a 65 535 bytes: una foto real comprimida
+     *  (800px, JPEG) en base64 ya se acerca o supera ese límite (mismo problema que
+     *  profilePhotoUrl en TrainNow-Usuarios). */
+    @Column(columnDefinition = "MEDIUMTEXT")
     private String imageUrl;
 
     /** Músculos trabajados (CSV). */
