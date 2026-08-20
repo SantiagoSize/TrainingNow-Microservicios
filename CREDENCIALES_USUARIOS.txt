@@ -58,10 +58,18 @@ en cada URL de arriba.
 
 Endpoints que SÍ exigen token de un ADMIN activo (header Authorization):
 - TrainNow-Usuarios: POST /api/users/admin-create, PATCH /api/users/{id}/ban,
-  /unban, /suspend, /unsuspend, POST y GET /api/audit-logs, GET /api/reports,
-  PATCH /api/reports/{id}/resolve
+  /unban, /suspend, /unsuspend, DELETE /api/users/{id}, POST y GET
+  /api/audit-logs, GET /api/reports, PATCH /api/reports/{id}/resolve
 - TrainNow-Biblioteca: POST/PUT/DELETE /api/categories/**, POST/PUT/DELETE
   /api/exercises/**
+
+NOTA (fix de última hora): DELETE /api/users/{id} (el botón "Eliminar cuenta"
+del panel admin) NO tenía protección hasta ahora - cualquiera podía borrar
+cualquier usuario con un DELETE sin token, sin pasar por Swagger ni por la app.
+Se agregó igual que los demás: hasRole("ADMIN") en SecurityConfig.java +
+requireActiveAdmin() en UserController.delete(). Tests nuevos:
+eliminar_sinToken_401, eliminar_comoUsuarioNormal_403, eliminar_comoAdmin_ok
+en UserControllerIntegrationTest.java.
 
 ====================================
 CÓMO CONSEGUIR Y USAR EL TOKEN JWT (Swagger / Postman)
@@ -95,6 +103,13 @@ Ya están declaradas en AppTrainingNow/.vscode/extensions.json: al abrir la carp
 AppTrainingNow en VS Code, el editor ofrece instalarlas solo (notificación
 "This workspace has extension recommendations"). Esta lista es la copia de
 referencia por si se instalan a mano o en otra máquina.
+
+--- MÍNIMO INDISPENSABLE (con esto 4 corre todo) ---
+vscjava.vscode-java-pack          Extension Pack for Java
+vmware.vscode-boot-dev-pack       Spring Boot Extension Pack
+pkief.material-icon-theme         Material Icon Theme
+vscjava.vscode-lombok             Lombok (sin esto, error rojo falso en varias
+                                   clases del backend aunque igual compile)
 
 --- Backend Java / Spring Boot (TrainNow-Microservicios) ---
 vscjava.vscode-java-pack          Extension Pack for Java (Language Support,

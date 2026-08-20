@@ -57,6 +57,9 @@ public class SecurityConfig {
                     // GET /api/reports también es solo-admin (listar reportes), pero
                     // POST /api/reports (crear un reporte) es libre para cualquier usuario logueado.
                     .requestMatchers(HttpMethod.GET, "/api/reports").hasRole("ADMIN")
+                    // DELETE /api/users/{id} es solo-admin, pero PUT /api/users/{id} (editar el
+                    // propio perfil) sigue abierto, por eso va aparte y no en RUTAS_ADMIN.
+                    .requestMatchers(HttpMethod.DELETE, "/api/users/*").hasRole("ADMIN")
                     .anyRequest().permitAll()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

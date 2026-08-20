@@ -47,7 +47,7 @@ class UserControllerIntegrationTest {
 
     @Test
     void crearUsuario_yLogin_ok() throws Exception {
-        String email = "nuevo@test.tn";
+        String email = "nuevo@gmail.com";
         mockMvc.perform(post("/api/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(nuevoUsuarioJson(email)))
@@ -79,12 +79,12 @@ class UserControllerIntegrationTest {
     void crearUsuario_emailDuplicado_409() throws Exception {
         mockMvc.perform(post("/api/users")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(nuevoUsuarioJson("dup@test.tn")))
+                        .content(nuevoUsuarioJson("dup@gmail.com")))
                 .andExpect(status().isCreated());
 
         mockMvc.perform(post("/api/users")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(nuevoUsuarioJson("dup@test.tn")))
+                        .content(nuevoUsuarioJson("dup@gmail.com")))
                 .andExpect(status().isConflict());
     }
 
@@ -198,12 +198,12 @@ class UserControllerIntegrationTest {
         // crear víctima
         mockMvc.perform(post("/api/users")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(nuevoUsuarioJson("baneado@test.tn")))
+                        .content(nuevoUsuarioJson("baneado@gmail.com")))
                 .andExpect(status().isCreated());
         String resp = mockMvc.perform(post("/api/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"email": "baneado@test.tn", "password": "test1234"}
+                                {"email": "baneado@gmail.com", "password": "test1234"}
                                 """))
                 .andReturn().getResponse().getContentAsString();
         long id = ((Number) com.jayway.jsonpath.JsonPath.read(resp, "$.id")).longValue();
@@ -222,7 +222,7 @@ class UserControllerIntegrationTest {
         mockMvc.perform(post("/api/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"email": "baneado@test.tn", "password": "test1234"}
+                                {"email": "baneado@gmail.com", "password": "test1234"}
                                 """))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.error").value(org.hamcrest.Matchers.containsString("baneada")));
@@ -234,7 +234,7 @@ class UserControllerIntegrationTest {
         mockMvc.perform(post("/api/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"email": "baneado@test.tn", "password": "test1234"}
+                                {"email": "baneado@gmail.com", "password": "test1234"}
                                 """))
                 .andExpect(status().isOk());
     }
@@ -244,12 +244,12 @@ class UserControllerIntegrationTest {
         String token = adminToken();
         mockMvc.perform(post("/api/users")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(nuevoUsuarioJson("suspendido@test.tn")))
+                        .content(nuevoUsuarioJson("suspendido@gmail.com")))
                 .andExpect(status().isCreated());
         String resp = mockMvc.perform(post("/api/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"email": "suspendido@test.tn", "password": "test1234"}
+                                {"email": "suspendido@gmail.com", "password": "test1234"}
                                 """))
                 .andReturn().getResponse().getContentAsString();
         long id = ((Number) com.jayway.jsonpath.JsonPath.read(resp, "$.id")).longValue();
@@ -266,7 +266,7 @@ class UserControllerIntegrationTest {
         mockMvc.perform(post("/api/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"email": "suspendido@test.tn", "password": "test1234"}
+                                {"email": "suspendido@gmail.com", "password": "test1234"}
                                 """))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.error").value(org.hamcrest.Matchers.containsString("suspendida")));
@@ -276,7 +276,7 @@ class UserControllerIntegrationTest {
         mockMvc.perform(post("/api/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"email": "suspendido@test.tn", "password": "test1234"}
+                                {"email": "suspendido@gmail.com", "password": "test1234"}
                                 """))
                 .andExpect(status().isOk());
     }
@@ -292,13 +292,48 @@ class UserControllerIntegrationTest {
     }
 
     @Test
+    void eliminar_sinToken_401() throws Exception {
+        mockMvc.perform(delete("/api/users/3"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void eliminar_comoUsuarioNormal_403() throws Exception {
+        String resp = mockMvc.perform(post("/api/users/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"email": "usuario@gmail.com", "password": "User1234"}
+                                """))
+                .andReturn().getResponse().getContentAsString();
+        String userToken = "Bearer " + com.jayway.jsonpath.JsonPath.read(resp, "$.token");
+
+        mockMvc.perform(delete("/api/users/3").header("Authorization", userToken))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void eliminar_comoAdmin_ok() throws Exception {
+        String token = adminToken();
+        mockMvc.perform(post("/api/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(nuevoUsuarioJson("aeliminar@gmail.com")))
+                .andExpect(status().isCreated());
+        long id = idDeUsuario("aeliminar@gmail.com", "test1234");
+
+        mockMvc.perform(delete("/api/users/" + id).header("Authorization", token))
+                .andExpect(status().isNoContent());
+        mockMvc.perform(get("/api/users/" + id))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
     void banear_sinMotivo_400() throws Exception {
         String token = adminToken();
         mockMvc.perform(post("/api/users")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(nuevoUsuarioJson("sinmotivo.ban@test.tn")))
+                        .content(nuevoUsuarioJson("sinmotivo.ban@gmail.com")))
                 .andExpect(status().isCreated());
-        long id = idDeUsuario("sinmotivo.ban@test.tn", "test1234");
+        long id = idDeUsuario("sinmotivo.ban@gmail.com", "test1234");
 
         mockMvc.perform(patch("/api/users/" + id + "/ban")
                         .header("Authorization", token)
@@ -315,9 +350,9 @@ class UserControllerIntegrationTest {
         String token = adminToken();
         mockMvc.perform(post("/api/users")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(nuevoUsuarioJson("sinmotivo.susp@test.tn")))
+                        .content(nuevoUsuarioJson("sinmotivo.susp@gmail.com")))
                 .andExpect(status().isCreated());
-        long id = idDeUsuario("sinmotivo.susp@test.tn", "test1234");
+        long id = idDeUsuario("sinmotivo.susp@gmail.com", "test1234");
         long hastaManana = System.currentTimeMillis() + 24 * 60 * 60 * 1000L;
 
         mockMvc.perform(patch("/api/users/" + id + "/suspend")

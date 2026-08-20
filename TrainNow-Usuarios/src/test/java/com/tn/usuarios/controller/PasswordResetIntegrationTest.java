@@ -26,7 +26,7 @@ class PasswordResetIntegrationTest {
         // 0. Usuario propio y desechable: la cuenta seed "usuario@gmail.com" es compartida
         // con otras clases de test (mismo contexto Spring/H2) y no debe mutarse acá, o
         // rompe logins que otras clases esperan hacer con la contraseña original.
-        String email = "resetflow@test.tn";
+        String email = "resetflow@gmail.com";
         mockMvc.perform(post("/api/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""

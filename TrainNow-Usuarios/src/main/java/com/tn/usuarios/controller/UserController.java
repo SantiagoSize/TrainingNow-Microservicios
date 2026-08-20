@@ -186,10 +186,13 @@ public class UserController {
     @DeleteMapping("/{id}")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Usuario eliminado"),
-            @ApiResponse(responseCode = "403", description = "No se puede eliminar al último administrador"),
+            @ApiResponse(responseCode = "401", description = "Falta el token de autorización"),
+            @ApiResponse(responseCode = "403", description = "El token no pertenece a un admin activo, o no se puede eliminar al último administrador"),
             @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
     })
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@RequestHeader(value = "Authorization", required = false) String authHeader,
+                                        @PathVariable Long id) {
+        userService.requireActiveAdmin(authHeader);
         userService.delete(id);
         return ResponseEntity.noContent().build();
     }
