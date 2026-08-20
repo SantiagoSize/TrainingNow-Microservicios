@@ -44,12 +44,17 @@ TrainNow-Comunicaciones (8084)  http://localhost:8084/swagger-ui.html
 JSON OpenAPI (para importar en Postman): reemplazar /swagger-ui.html por /v3/api-docs
 en cada URL de arriba.
 
-¿SEGURIDAD? Los 4 servicios tienen permitAll() a nivel de Spring Security (API
-abierta, entorno académico/local): nadie te bloquea la entrada a Swagger UI ni a
-un endpoint por no traer token. PERO varios endpoints sí validan el token JWT a
-mano dentro del código (ver siguiente sección) y devuelven 403 si falta o es de
-alguien que no es admin. No es lo mismo "sin seguridad" que "sin JWT": el JWT
-real existe, solo que no está enchufado como filtro global de Spring Security.
+¿SEGURIDAD? Ahora sí hay Spring Security real, con filtro JWT propio
+(JwtAuthenticationFilter) en los 4 servicios:
+- TrainNow-Usuarios y TrainNow-Biblioteca: los endpoints administrativos exigen
+  un token JWT de rol ADMIN a nivel de Spring Security (401 sin token, 403 con
+  token de otro rol). Además se mantiene el chequeo manual que ya existía
+  (requireActiveAdmin / JwtValidator.requireAdmin) como segunda capa, por si el
+  admin fue baneado/suspendido después de sacar el token.
+- TrainNow-Rutinas y TrainNow-Comunicaciones: siguen totalmente abiertos
+  (permitAll), no tienen ningún endpoint restringido por rol.
+- Todo lo que no está en la lista de abajo (login, registro, listar, buscar,
+  chat, rutinas, asistencia, notificaciones) sigue libre, sin token.
 
 Endpoints que SÍ exigen token de un ADMIN activo (header Authorization):
 - TrainNow-Usuarios: POST /api/users/admin-create, PATCH /api/users/{id}/ban,
@@ -57,8 +62,6 @@ Endpoints que SÍ exigen token de un ADMIN activo (header Authorization):
   PATCH /api/reports/{id}/resolve
 - TrainNow-Biblioteca: POST/PUT/DELETE /api/categories/**, POST/PUT/DELETE
   /api/exercises/**
-Todo lo demás (login, registro, listar, buscar, chat, rutinas, asistencia,
-notificaciones) es libre, no pide token.
 
 ====================================
 CÓMO CONSEGUIR Y USAR EL TOKEN JWT (Swagger / Postman)
@@ -70,13 +73,11 @@ CÓMO CONSEGUIR Y USAR EL TOKEN JWT (Swagger / Postman)
    Usa una cuenta ADMIN (admin@trainingnow.com o francisca.torres@trainingnow.com)
    para los endpoints de arriba - con un token de entrenador o usuario da 403.
 
-2) En Swagger UI: NO hay botón "Authorize" (candado) porque el token no está
-   declarado como esquema de seguridad global, se valida a mano por endpoint.
-   En los endpoints protegidos (los listados arriba), al desplegarlos vas a ver
-   un parámetro de tipo header llamado "authHeader" o "Authorization" bajo
-   "Try it out" - ahí pegas exactamente:
-       Bearer <el_token_que_te_dio_el_login>
-   (con "Bearer " y un espacio antes del token, respetando la mayúscula B).
+2) En Swagger UI (Usuarios y Biblioteca): ahora SÍ hay botón "Authorize" (candado
+   verde arriba a la derecha). Tócalo, pega SOLO el token (sin la palabra
+   "Bearer", Swagger la agrega sola) y dale "Authorize". Desde ese momento
+   todos los "Try it out" de esa pestaña ya mandan el header solos. Rutinas y
+   Comunicaciones no tienen este botón porque no tienen nada que proteger.
 
 3) En Postman: en la request, pestaña "Headers" → agrega la key "Authorization"
    con el value "Bearer <token>". O usando la pestaña "Authorization" de Postman:
@@ -84,8 +85,8 @@ CÓMO CONSEGUIR Y USAR EL TOKEN JWT (Swagger / Postman)
    solo). Cualquiera de las dos formas funciona igual.
 
 4) El mismo token sirve para Usuarios y Biblioteca (comparten el mismo secreto
-   HS256, jwt.secret). TrainNow-Rutinas y TrainNow-Comunicaciones no validan
-   token en ningún endpoint todavía, no hace falta mandarlo ahí.
+   HS256, jwt.secret). En Rutinas/Comunicaciones no hace falta mandarlo, no
+   piden nada.
 
 ====================================
 EXTENSIONES DE VISUAL STUDIO CODE (para correr el proyecto en otro PC)
@@ -133,6 +134,28 @@ Nota: extensions.json ya tiene la mayoría de esta lista como "recommendations".
 Si falta alguna al clonar en otro PC, instálala desde el panel de Extensiones
 (Ctrl+Shift+X) buscando el ID de arriba, o con:
   code --install-extension <id>
+
+====================================
+VALIDACIÓN: DOMINIOS DE CORREO PERMITIDOS (registro público)
+====================================
+Ejemplo de cambio "en vivo" simple para mostrar al profe: el registro público
+(usuarios normales, NO el alta de staff por admin) solo acepta correos de
+gmail.com, hotmail.com, outlook.com o yahoo.com. Está en dos capas:
+
+- Backend (la que manda): TrainNow-Usuarios/src/main/java/com/tn/usuarios/
+  service/UserService.java - constante DOMINIOS_PERMITIDOS + método
+  isDominioPermitido(), llamado desde create(). Si el dominio no está en la
+  lista, responde 400 con {"error":"Solo se aceptan correos de: ..."}.
+- App (feedback inmediato, no reemplaza al backend): TrainingNow/app/src/main/
+  java/com/shagox/apptrainingnow/domain/validation/Validators.kt - función
+  validateEmailRegistro() (usada SOLO en el campo de registro, en
+  AuthViewModel.onRegisterEmailChange). El login sigue usando validateEmail()
+  a secas (sin restricción de dominio) para no bloquear a las cuentas
+  @trainingnow.com de staff que ya existen.
+
+Para agregar/quitar un dominio: editar el Set de ambos archivos (deben
+coincidir). Para cambiar la regla completa (ej. "solo un dominio", "cualquiera
+menos X"), la lógica está aislada en esos dos mismos lugares.
 
 ====================================
 NOTAS FINALES

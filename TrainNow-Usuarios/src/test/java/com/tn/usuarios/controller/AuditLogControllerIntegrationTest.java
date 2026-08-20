@@ -24,7 +24,7 @@ class AuditLogControllerIntegrationTest {
         String resp = mockMvc.perform(post("/api/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"email": "admin@trainingnow.com", "password": "admin123"}
+                                {"email": "admin@trainingnow.com", "password": "Admin123"}
                                 """))
                 .andReturn().getResponse().getContentAsString();
         return "Bearer " + com.jayway.jsonpath.JsonPath.read(resp, "$.token");
@@ -39,17 +39,17 @@ class AuditLogControllerIntegrationTest {
     }
 
     @Test
-    void registrar_sinToken_403() throws Exception {
+    void registrar_sinToken_401() throws Exception {
         mockMvc.perform(post("/api/audit-logs")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(logJson("EXERCISE", "Zancadas")))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
-    void listar_sinToken_403() throws Exception {
+    void listar_sinToken_401() throws Exception {
         mockMvc.perform(get("/api/audit-logs"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -90,7 +90,7 @@ class AuditLogControllerIntegrationTest {
         String resp = mockMvc.perform(post("/api/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"email": "usuario@gmail.com", "password": "user123"}
+                                {"email": "usuario@gmail.com", "password": "User1234"}
                                 """))
                 .andReturn().getResponse().getContentAsString();
         String userToken = "Bearer " + com.jayway.jsonpath.JsonPath.read(resp, "$.token");

@@ -24,7 +24,7 @@ class UserControllerIntegrationTest {
         String resp = mockMvc.perform(post("/api/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"email": "admin@trainingnow.com", "password": "admin123"}
+                                {"email": "admin@trainingnow.com", "password": "Admin123"}
                                 """))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
@@ -164,7 +164,7 @@ class UserControllerIntegrationTest {
         String resp = mockMvc.perform(post("/api/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"email": "usuario@gmail.com", "password": "user123"}
+                                {"email": "usuario@gmail.com", "password": "User1234"}
                                 """))
                 .andReturn().getResponse().getContentAsString();
         String userToken = "Bearer " + com.jayway.jsonpath.JsonPath.read(resp, "$.token");
@@ -282,13 +282,13 @@ class UserControllerIntegrationTest {
     }
 
     @Test
-    void sancionar_sinToken_403() throws Exception {
+    void sancionar_sinToken_401() throws Exception {
         mockMvc.perform(patch("/api/users/3/ban")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"reason": "x"}
                                 """))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test

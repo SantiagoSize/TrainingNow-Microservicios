@@ -50,13 +50,13 @@ class CategoriaControllerIntegrationTest {
     }
 
     @Test
-    void crear_sinToken_403() throws Exception {
+    void crear_sinToken_401() throws Exception {
         mockMvc.perform(post("/api/categories")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"name": "Cardio"}
                                 """))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test

@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Lógica de negocio de usuarios: CRUD, login y búsquedas por rol.
@@ -26,6 +27,10 @@ public class UserService {
 
     /** Dominio corporativo reservado para el personal (admins y entrenadores). */
     private static final String STAFF_DOMAIN = "@trainingnow.com";
+
+    /** Dominios de correo aceptados en el registro público (usuarios normales). */
+    private static final Set<String> DOMINIOS_PERMITIDOS = Set.of(
+            "gmail.com", "hotmail.com", "outlook.com", "yahoo.com");
     private static final String ROLE_ADMIN = "ADMIN";
     private static final String ROLE_TRAINER = "TRAINER";
     private static final String ROLE_CLIENT = "USER";
@@ -61,6 +66,10 @@ public class UserService {
         if (isStaffEmail(dto.getEmail())) {
             throw new ForbiddenOperationException(
                     "El dominio @trainingnow.com está reservado para el personal. Contacta a un administrador.");
+        }
+        if (!isDominioPermitido(dto.getEmail())) {
+            throw new IllegalArgumentException(
+                    "Solo se aceptan correos de: " + String.join(", ", DOMINIOS_PERMITIDOS));
         }
         if (userRepository.existsByEmailIgnoreCase(dto.getEmail())) {
             throw new DuplicateEmailException("El email ya existe: " + dto.getEmail());
@@ -110,6 +119,13 @@ public class UserService {
 
     private boolean isStaffEmail(String email) {
         return email != null && email.trim().toLowerCase().endsWith(STAFF_DOMAIN);
+    }
+
+    /** Dominio permitido para registro público: gmail/hotmail/outlook/yahoo. */
+    private boolean isDominioPermitido(String email) {
+        if (email == null || !email.contains("@")) return false;
+        String dominio = email.substring(email.indexOf('@') + 1).trim().toLowerCase();
+        return DOMINIOS_PERMITIDOS.contains(dominio);
     }
 
     /**

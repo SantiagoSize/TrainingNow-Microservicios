@@ -24,7 +24,7 @@ class ReportControllerIntegrationTest {
         String resp = mockMvc.perform(post("/api/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"email": "admin@trainingnow.com", "password": "admin123"}
+                                {"email": "admin@trainingnow.com", "password": "Admin123"}
                                 """))
                 .andReturn().getResponse().getContentAsString();
         return "Bearer " + com.jayway.jsonpath.JsonPath.read(resp, "$.token");
@@ -66,9 +66,9 @@ class ReportControllerIntegrationTest {
     }
 
     @Test
-    void listarReportes_sinToken_403() throws Exception {
+    void listarReportes_sinToken_401() throws Exception {
         mockMvc.perform(get("/api/reports"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
