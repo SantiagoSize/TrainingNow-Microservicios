@@ -3,6 +3,8 @@ package com.tn.biblioteca.controller;
 import com.tn.biblioteca.dto.CategoriaDto;
 import com.tn.biblioteca.security.JwtValidator;
 import com.tn.biblioteca.service.CategoriaService;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,11 +26,17 @@ public class CategoriaController {
     private final JwtValidator jwtValidator;
 
     @GetMapping
+    @ApiResponse(responseCode = "200", description = "Lista de categorías")
     public List<CategoriaDto> getAll() {
         return service.getAll();
     }
 
     @PostMapping
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Categoría creada"),
+            @ApiResponse(responseCode = "403", description = "El token no pertenece a un admin activo"),
+            @ApiResponse(responseCode = "409", description = "Ya existe una categoría con ese nombre")
+    })
     public ResponseEntity<CategoriaDto> create(
             @RequestHeader(value = "Authorization", required = false) String authHeader,
             @RequestBody Map<String, String> body) {
@@ -38,6 +46,11 @@ public class CategoriaController {
 
     /** Renombra la categoría y actualiza todos los ejercicios que la usan. */
     @PutMapping("/{oldName}")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Categoría renombrada"),
+            @ApiResponse(responseCode = "403", description = "El token no pertenece a un admin activo"),
+            @ApiResponse(responseCode = "404", description = "La categoría no existe")
+    })
     public CategoriaDto rename(
             @RequestHeader(value = "Authorization", required = false) String authHeader,
             @PathVariable String oldName,
@@ -48,6 +61,11 @@ public class CategoriaController {
 
     /** Elimina la categoría y todos los ejercicios que contiene. */
     @DeleteMapping("/{name}")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Categoría (y sus ejercicios) eliminados"),
+            @ApiResponse(responseCode = "403", description = "El token no pertenece a un admin activo"),
+            @ApiResponse(responseCode = "404", description = "La categoría no existe")
+    })
     public ResponseEntity<Void> delete(
             @RequestHeader(value = "Authorization", required = false) String authHeader,
             @PathVariable String name) {

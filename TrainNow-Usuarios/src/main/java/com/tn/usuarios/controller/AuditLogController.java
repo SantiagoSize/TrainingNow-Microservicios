@@ -3,6 +3,8 @@ package com.tn.usuarios.controller;
 import com.tn.usuarios.dto.AuditLogDto;
 import com.tn.usuarios.service.AuditLogService;
 import com.tn.usuarios.service.UserService;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,6 +27,11 @@ public class AuditLogController {
     private final UserService userService;
 
     @PostMapping
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Registro de actividad guardado"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "403", description = "El token no pertenece a un admin activo")
+    })
     public ResponseEntity<AuditLogDto> record(
             @RequestHeader(value = "Authorization", required = false) String authHeader,
             @Valid @RequestBody AuditLogDto dto) {
@@ -33,6 +40,10 @@ public class AuditLogController {
     }
 
     @GetMapping
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Lista de actividad (opcionalmente filtrada por targetType)"),
+            @ApiResponse(responseCode = "403", description = "El token no pertenece a un admin activo")
+    })
     public List<AuditLogDto> getAll(
             @RequestHeader(value = "Authorization", required = false) String authHeader,
             @RequestParam(required = false) String targetType) {

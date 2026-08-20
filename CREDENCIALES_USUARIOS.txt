@@ -1,0 +1,142 @@
+TRAINING NOW! - USUARIOS DE PRUEBA
+====================================
+Fuente: DataLoader.java (TrainNow-Usuarios) - backend real, MySQL.
+Estas son las cuentas que existen en el backend cuando corres los microservicios.
+
+Contraseñas actualizadas para cumplir la validación de registro (min. 8 caracteres,
+1 mayúscula, 1 minúscula, 1 número). El backend las corrige solo en cada arranque
+(asegurarContrasenasDemoValidas en DataLoader.java), así que no hace falta borrar
+la base de datos para que tomen efecto. El seed completo es idempotente: reiniciar
+TrainNow-Usuarios no duplica ni pisa datos que ya hayas editado desde la app.
+
+--- ADMIN (2) ---
+admin@trainingnow.com          / Admin123        - Admin TrainingNow
+francisca.torres@trainingnow.com / Demo1234       - Francisca Torres Bravo
+
+--- ENTRENADOR / TRAINER (3) ---
+entrenador@trainingnow.com     / Entrenador123   - Carlos Mendoza Silva
+valentina.soto@trainingnow.com / Demo1234         - Valentina Soto Pizarro
+rodrigo.fuentes@trainingnow.com / Demo1234        - Rodrigo Fuentes Aravena
+
+--- USUARIO / USER (3) ---
+usuario@gmail.com              / User1234         - Santiago Vargas Reyes
+maria.gonzalez@gmail.com       / Demo1234         - María Fernanda González Soto
+diego.munoz@gmail.com          / Demo1234         - Diego Andrés Muñoz Rojas
+
+--- CUENTAS DE PRUEBA DE SANCIÓN (fuera del roster oficial) ---
+baneado.demo@gmail.com         / Demo1234         - Usuario Baneado (cuenta baneada)
+suspendido.demo@gmail.com      / Demo1234         - Usuario Suspendido (suspendida 7 días desde su creación)
+
+Para mostrar el botón "Levantar" (Admin > Suspender/Banear/Eliminar), busca a
+cualquiera de estos dos por ID, elige la acción "Levantar" y confirma que el
+login vuelve a funcionar.
+
+====================================
+DOCUMENTACIÓN API (Swagger / OpenAPI) - para mostrar al profe
+====================================
+Con los 4 microservicios corriendo localmente:
+
+TrainNow-Usuarios (8081)        http://localhost:8081/swagger-ui.html
+TrainNow-Biblioteca (8082)      http://localhost:8082/swagger-ui.html
+TrainNow-Rutinas (8083)         http://localhost:8083/swagger-ui.html
+TrainNow-Comunicaciones (8084)  http://localhost:8084/swagger-ui.html
+
+JSON OpenAPI (para importar en Postman): reemplazar /swagger-ui.html por /v3/api-docs
+en cada URL de arriba.
+
+¿SEGURIDAD? Los 4 servicios tienen permitAll() a nivel de Spring Security (API
+abierta, entorno académico/local): nadie te bloquea la entrada a Swagger UI ni a
+un endpoint por no traer token. PERO varios endpoints sí validan el token JWT a
+mano dentro del código (ver siguiente sección) y devuelven 403 si falta o es de
+alguien que no es admin. No es lo mismo "sin seguridad" que "sin JWT": el JWT
+real existe, solo que no está enchufado como filtro global de Spring Security.
+
+Endpoints que SÍ exigen token de un ADMIN activo (header Authorization):
+- TrainNow-Usuarios: POST /api/users/admin-create, PATCH /api/users/{id}/ban,
+  /unban, /suspend, /unsuspend, POST y GET /api/audit-logs, GET /api/reports,
+  PATCH /api/reports/{id}/resolve
+- TrainNow-Biblioteca: POST/PUT/DELETE /api/categories/**, POST/PUT/DELETE
+  /api/exercises/**
+Todo lo demás (login, registro, listar, buscar, chat, rutinas, asistencia,
+notificaciones) es libre, no pide token.
+
+====================================
+CÓMO CONSEGUIR Y USAR EL TOKEN JWT (Swagger / Postman)
+====================================
+1) Conseguir el token: POST http://localhost:8081/api/users/login con body
+   {"email": "admin@trainingnow.com", "password": "Admin123"}
+   La respuesta trae un campo "token" (JWT largo tipo xxxxx.yyyyy.zzzzz). Ese es
+   el que se usa. Dura 24 horas (jwt.secret / EXPIRATION_MS en JwtService.java).
+   Usa una cuenta ADMIN (admin@trainingnow.com o francisca.torres@trainingnow.com)
+   para los endpoints de arriba - con un token de entrenador o usuario da 403.
+
+2) En Swagger UI: NO hay botón "Authorize" (candado) porque el token no está
+   declarado como esquema de seguridad global, se valida a mano por endpoint.
+   En los endpoints protegidos (los listados arriba), al desplegarlos vas a ver
+   un parámetro de tipo header llamado "authHeader" o "Authorization" bajo
+   "Try it out" - ahí pegas exactamente:
+       Bearer <el_token_que_te_dio_el_login>
+   (con "Bearer " y un espacio antes del token, respetando la mayúscula B).
+
+3) En Postman: en la request, pestaña "Headers" → agrega la key "Authorization"
+   con el value "Bearer <token>". O usando la pestaña "Authorization" de Postman:
+   tipo "Bearer Token" y pegas SOLO el token (Postman agrega el prefijo "Bearer "
+   solo). Cualquiera de las dos formas funciona igual.
+
+4) El mismo token sirve para Usuarios y Biblioteca (comparten el mismo secreto
+   HS256, jwt.secret). TrainNow-Rutinas y TrainNow-Comunicaciones no validan
+   token en ningún endpoint todavía, no hace falta mandarlo ahí.
+
+====================================
+EXTENSIONES DE VISUAL STUDIO CODE (para correr el proyecto en otro PC)
+====================================
+Ya están declaradas en AppTrainingNow/.vscode/extensions.json: al abrir la carpeta
+AppTrainingNow en VS Code, el editor ofrece instalarlas solo (notificación
+"This workspace has extension recommendations"). Esta lista es la copia de
+referencia por si se instalan a mano o en otra máquina.
+
+--- Backend Java / Spring Boot (TrainNow-Microservicios) ---
+vscjava.vscode-java-pack          Extension Pack for Java (Language Support,
+                                   Debugger, Test Runner, Maven, Project Manager)
+vmware.vscode-boot-dev-pack       Spring Boot Extension Pack (Spring Boot Tools +
+                                   Initializr + Dashboard)
+vmware.vscode-spring-boot         Spring Boot Tools (autocompletado de
+                                   application.properties, navegación de beans)
+vscjava.vscode-spring-initializr  Spring Initializr (crear/editar proyectos Spring)
+vscjava.vscode-spring-boot-dashboard  Spring Boot Dashboard (correr/parar los 4
+                                   microservicios desde la barra lateral)
+vscjava.vscode-lombok             Soporte para Lombok (@RequiredArgsConstructor,
+                                   @Slf4j, @Builder - se usan en los 4 servicios)
+vscjava.vscode-gradle              Gradle for Java (para el proyecto TrainingNow
+                                   Kotlin/Android; los microservicios usan Maven)
+redhat.vscode-xml                 Soporte de XML (pom.xml)
+
+--- Base de datos MySQL ---
+mtxr.sqltools                     SQLTools
+mtxr.sqltools-driver-mysql        Driver MySQL para SQLTools
+
+--- Kotlin (TrainingNow app; para compilar/ejecutar usa Android Studio) ---
+fwcd.kotlin                       Kotlin Language
+
+--- Probar endpoints REST de los microservicios ---
+humao.rest-client                 REST Client (archivos .http)
+rangav.vscode-thunder-client      Thunder Client (alternativa tipo Postman)
+
+--- Generales / calidad de vida ---
+pkief.material-icon-theme         Material Icon Theme (iconos de archivos/carpetas)
+eamodio.gitlens                   GitLens
+editorconfig.editorconfig         EditorConfig
+streetsidesoftware.code-spell-checker  Code Spell Checker
+usernamehw.errorlens              Error Lens (errores/warnings inline)
+
+Nota: extensions.json ya tiene la mayoría de esta lista como "recommendations".
+Si falta alguna al clonar en otro PC, instálala desde el panel de Extensiones
+(Ctrl+Shift+X) buscando el ID de arriba, o con:
+  code --install-extension <id>
+
+====================================
+NOTAS FINALES
+====================================
+- Credenciales de prueba solo para el entorno local - no están pensadas para
+  producción. Si no quieres este archivo en el repositorio público, agrégalo a
+  .gitignore.

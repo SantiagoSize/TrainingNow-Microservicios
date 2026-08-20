@@ -2,6 +2,8 @@ package com.tn.usuarios.controller;
 
 import com.tn.usuarios.dto.TrainerClientDto;
 import com.tn.usuarios.service.TrainerClientService;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,22 +23,30 @@ public class TrainerClientController {
     private final TrainerClientService service;
 
     @GetMapping("/trainer/{trainerId}")
+    @ApiResponse(responseCode = "200", description = "Clientes vinculados a ese entrenador")
     public List<TrainerClientDto> getByTrainer(@PathVariable Long trainerId) {
         return service.getByTrainer(trainerId);
     }
 
     @GetMapping("/trainer/{trainerId}/status/{status}")
+    @ApiResponse(responseCode = "200", description = "Clientes del entrenador filtrados por status (ACTIVE/PENDING/etc)")
     public List<TrainerClientDto> getByTrainerAndStatus(@PathVariable Long trainerId,
                                                         @PathVariable String status) {
         return service.getByTrainerAndStatus(trainerId, status);
     }
 
     @GetMapping("/client/{clientId}")
+    @ApiResponse(responseCode = "200", description = "Entrenadores vinculados a ese cliente")
     public List<TrainerClientDto> getByClient(@PathVariable Long clientId) {
         return service.getByClient(clientId);
     }
 
     @PostMapping
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Relación entrenador-cliente creada"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "409", description = "La relación ya existe")
+    })
     public ResponseEntity<TrainerClientDto> create(@Valid @RequestBody TrainerClientDto dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.create(dto));
     }

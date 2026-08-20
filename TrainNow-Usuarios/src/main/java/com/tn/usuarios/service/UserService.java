@@ -6,6 +6,7 @@ import com.tn.usuarios.exception.ForbiddenOperationException;
 import com.tn.usuarios.exception.InvalidCredentialsException;
 import com.tn.usuarios.exception.ResourceNotFoundException;
 import com.tn.usuarios.model.User;
+import com.tn.usuarios.repository.TrainerClientRepository;
 import com.tn.usuarios.repository.UserRepository;
 import com.tn.usuarios.security.JwtService;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,7 @@ public class UserService {
     private static final String ROLE_CLIENT = "USER";
 
     private final UserRepository userRepository;
+    private final TrainerClientRepository trainerClientRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
@@ -144,8 +146,23 @@ public class UserService {
         return UserDto.fromEntity(userRepository.save(existing));
     }
 
+    /**
+     * Elimina una cuenta. Antes de admin/entrenador no había ninguna validación: se podía
+     * borrar el último administrador del sistema (dejando la app sin nadie que administre), y
+     * borrar un entrenador dejaba sus filas en trainer_clients "colgando" (trainerId apuntando
+     * a un usuario que ya no existe). Ahora:
+     * - Bloquea borrar el último ADMIN.
+     * - Borra en cascada las relaciones trainer_clients donde el usuario es entrenador o
+     *   cliente, para no dejar referencias huérfanas en esta base de datos.
+     */
     public void delete(Long id) {
-        userRepository.delete(findOrThrow(id));
+        User target = findOrThrow(id);
+        if (ROLE_ADMIN.equals(target.getRole()) && userRepository.findByRole(ROLE_ADMIN).size() <= 1) {
+            throw new ForbiddenOperationException("No puedes eliminar al último administrador del sistema");
+        }
+        trainerClientRepository.deleteAll(trainerClientRepository.findByTrainerId(id));
+        trainerClientRepository.deleteAll(trainerClientRepository.findByClientId(id));
+        userRepository.delete(target);
     }
 
     /**

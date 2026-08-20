@@ -93,7 +93,7 @@ public class DataLoader implements CommandLineRunner {
                     .name("Admin")
                     .lastName("TrainingNow")
                     .email("admin@trainingnow.com")
-                    .password(passwordEncoder.encode("admin123"))
+                    .password(passwordEncoder.encode("Admin123"))
                     .build());
 
             userRepository.save(User.builder()
@@ -101,7 +101,7 @@ public class DataLoader implements CommandLineRunner {
                     .name("Carlos")
                     .lastName("Mendoza Silva")
                     .email("entrenador@trainingnow.com")
-                    .password(passwordEncoder.encode("entrenador123"))
+                    .password(passwordEncoder.encode("Entrenador123"))
                     .specializations("Fuerza,Hipertrofia")
                     .bio(BIO_CARLOS)
                     .build());
@@ -111,7 +111,7 @@ public class DataLoader implements CommandLineRunner {
                     .name("Santiago")
                     .lastName("Vargas Reyes")
                     .email("usuario@gmail.com")
-                    .password(passwordEncoder.encode("user123"))
+                    .password(passwordEncoder.encode("User1234"))
                     .build());
         }
 
@@ -122,6 +122,34 @@ public class DataLoader implements CommandLineRunner {
         completarBiosEntrenadores();
         asignarFotosRealesEntrenadores();
         repararFotosDePerfil();
+        asegurarContrasenasDemoValidas();
+    }
+
+    /**
+     * Las contraseñas de las cuentas base/demo se cambiaron a un formato que cumple la
+     * validación del registro (min. 8 caracteres, mayúscula, minúscula y número). Los bloques
+     * de arriba (save/crearSiNoExiste) solo escriben la contraseña la primera vez que se crea
+     * la fila, así que en una base de datos que ya tenía estas cuentas con la contraseña vieja
+     * (ej. "admin123") no se actualizaría sola. Este método corre en cada arranque y fuerza
+     * la contraseña vigente en cada cuenta demo, igual patrón que repararTelefonosNulos().
+     */
+    private void asegurarContrasenasDemoValidas() {
+        java.util.Map<String, String> contrasenas = java.util.Map.ofEntries(
+                java.util.Map.entry("admin@trainingnow.com", "Admin123"),
+                java.util.Map.entry("entrenador@trainingnow.com", "Entrenador123"),
+                java.util.Map.entry("usuario@gmail.com", "User1234"),
+                java.util.Map.entry("francisca.torres@trainingnow.com", "Demo1234"),
+                java.util.Map.entry("valentina.soto@trainingnow.com", "Demo1234"),
+                java.util.Map.entry("rodrigo.fuentes@trainingnow.com", "Demo1234"),
+                java.util.Map.entry("maria.gonzalez@gmail.com", "Demo1234"),
+                java.util.Map.entry("diego.munoz@gmail.com", "Demo1234"),
+                java.util.Map.entry("baneado.demo@gmail.com", "Demo1234"),
+                java.util.Map.entry("suspendido.demo@gmail.com", "Demo1234")
+        );
+        contrasenas.forEach((email, pass) -> userRepository.findByEmailIgnoreCase(email).ifPresent(u -> {
+            u.setPassword(passwordEncoder.encode(pass));
+            userRepository.save(u);
+        }));
     }
 
     /**
@@ -255,8 +283,7 @@ public class DataLoader implements CommandLineRunner {
 
     /**
      * Dos cuentas de prueba ya sancionadas (fuera del roster oficial de 3 usuarios/3
-     * entrenadores/2 admins, igual que las cuentas que limpia limpiar_usuarios_prueba.bat),
-     * para poder mostrar el flujo de baneo/suspensión al profesor sin tener que aplicar la
+     * entrenadores/2 admins), para poder mostrar el flujo de baneo/suspensión al profesor sin tener que aplicar la
      * sanción a mano antes de cada demo. Se crean una sola vez (idempotente); la suspensión
      * queda fijada a 7 días desde el primer arranque en el que se crean.
      */

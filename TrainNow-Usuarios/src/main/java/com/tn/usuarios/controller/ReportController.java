@@ -3,6 +3,8 @@ package com.tn.usuarios.controller;
 import com.tn.usuarios.dto.ReportDto;
 import com.tn.usuarios.service.ReportService;
 import com.tn.usuarios.service.UserService;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,11 +27,19 @@ public class ReportController {
     private final UserService userService;
 
     @PostMapping
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Reporte creado"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos")
+    })
     public ResponseEntity<ReportDto> create(@Valid @RequestBody ReportDto dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(reportService.create(dto));
     }
 
     @GetMapping
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Lista de reportes (opcionalmente filtrada por status)"),
+            @ApiResponse(responseCode = "403", description = "El token no pertenece a un admin activo")
+    })
     public List<ReportDto> getAll(
             @RequestHeader(value = "Authorization", required = false) String authHeader,
             @RequestParam(required = false) String status) {
@@ -38,6 +48,11 @@ public class ReportController {
     }
 
     @PatchMapping("/{id}/resolve")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Reporte resuelto"),
+            @ApiResponse(responseCode = "403", description = "El token no pertenece a un admin activo"),
+            @ApiResponse(responseCode = "404", description = "Reporte no encontrado")
+    })
     public ResponseEntity<ReportDto> resolve(
             @RequestHeader(value = "Authorization", required = false) String authHeader,
             @PathVariable Long id,

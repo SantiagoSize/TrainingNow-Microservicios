@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
@@ -83,9 +84,19 @@ public class DataLoader implements CommandLineRunner {
     @Override
     public void run(String... args) {
         asegurarColumnaImagenAmplia();
-        boolean yaSembrado = repository.count() > 0;
+        completarDatosDidacticosFaltantes();
+        completarVideoUrlsFaltantes();
+        asignarFotosEjercicios();
+    }
 
-        if (!yaSembrado) repository.saveAll(List.of(
+    /**
+     * Datos canónicos de los 15 ejercicios base del sistema (nombre, categoría, video,
+     * descripción, músculos, dificultad, equipamiento, ejecución paso a paso, consejos,
+     * errores comunes y volumen recomendado). Se usan desde completarDatosDidacticosFaltantes()
+     * para insertar los que falten y completar los que ya existan.
+     */
+    private List<Ejercicio> datosBase() {
+        return List.of(
 
             // ==================== PECTORALES ====================
             Ejercicio.builder()
@@ -427,10 +438,73 @@ public class DataLoader implements CommandLineRunner {
                         + "Hacerlo tan rápido que se pierde la contracción.")
                 .recommendedSets(3).recommendedReps("15-20").restSeconds(45)
                 .isSystemDefault(true).build()
-        ));
+        );
+    }
 
-        completarVideoUrlsFaltantes();
-        asignarFotosEjercicios();
+    /**
+     * Inserta los ejercicios base que todavía no existan (por nombre) y completa, en los que
+     * ya existen, cualquier campo didáctico que haya quedado vacío (descripción, músculos,
+     * dificultad, equipamiento, instrucciones, consejos, errores comunes, series/reps/descanso).
+     * Antes esto solo se hacía con repository.saveAll(...) la primera vez que la tabla estaba
+     * vacía (if (!yaSembrado)): una base de datos que ya tenía estos 15 ejercicios de una
+     * versión anterior del seed (solo nombre/categoría/video/descripción corta) nunca recibía
+     * los campos ricos agregados después. Nunca pisa un valor que el admin ya haya editado
+     * desde el panel. Se ejecuta en cada arranque, igual que completarVideoUrlsFaltantes() /
+     * asignarFotosEjercicios().
+     */
+    private void completarDatosDidacticosFaltantes() {
+        var existentesPorNombre = repository.findAll().stream()
+                .collect(Collectors.toMap(e -> e.getName().toLowerCase(), e -> e, (a, b) -> a));
+
+        List<Ejercicio> nuevos = new ArrayList<>();
+        List<Ejercicio> actualizados = new ArrayList<>();
+
+        for (Ejercicio canonico : datosBase()) {
+            Ejercicio existente = existentesPorNombre.get(canonico.getName().toLowerCase());
+            if (existente == null) {
+                nuevos.add(canonico);
+                continue;
+            }
+            boolean cambio = false;
+            if (vacio(existente.getDescription()) && !vacio(canonico.getDescription())) {
+                existente.setDescription(canonico.getDescription()); cambio = true;
+            }
+            if (vacio(existente.getMuscles()) && !vacio(canonico.getMuscles())) {
+                existente.setMuscles(canonico.getMuscles()); cambio = true;
+            }
+            if (vacio(existente.getEquipment()) && !vacio(canonico.getEquipment())) {
+                existente.setEquipment(canonico.getEquipment()); cambio = true;
+            }
+            if (vacio(existente.getInstructions()) && !vacio(canonico.getInstructions())) {
+                existente.setInstructions(canonico.getInstructions()); cambio = true;
+            }
+            if (vacio(existente.getTips()) && !vacio(canonico.getTips())) {
+                existente.setTips(canonico.getTips()); cambio = true;
+            }
+            if (vacio(existente.getCommonMistakes()) && !vacio(canonico.getCommonMistakes())) {
+                existente.setCommonMistakes(canonico.getCommonMistakes()); cambio = true;
+            }
+            if (existente.getRecommendedSets() == null) {
+                existente.setRecommendedSets(canonico.getRecommendedSets()); cambio = true;
+            }
+            if (vacio(existente.getRecommendedReps()) && !vacio(canonico.getRecommendedReps())) {
+                existente.setRecommendedReps(canonico.getRecommendedReps()); cambio = true;
+            }
+            if (existente.getRestSeconds() == null) {
+                existente.setRestSeconds(canonico.getRestSeconds()); cambio = true;
+            }
+            if (vacio(existente.getDifficulty()) && !vacio(canonico.getDifficulty())) {
+                existente.setDifficulty(canonico.getDifficulty()); cambio = true;
+            }
+            if (cambio) actualizados.add(existente);
+        }
+
+        if (!nuevos.isEmpty()) repository.saveAll(nuevos);
+        if (!actualizados.isEmpty()) repository.saveAll(actualizados);
+    }
+
+    private boolean vacio(String s) {
+        return s == null || s.isBlank();
     }
 
     /**
